@@ -1,3 +1,5 @@
+// ===== TRIP DATA =====
+
 const tripData = [
   {
     day: 1,
@@ -691,7 +693,7 @@ const tripData = [
         address: "200 Karrinyup Rd, Karrinyup WA 6018",
         tag: "activity",
         duration: "1h 45m",
-        fact: "This is one of Perth's premier shopping centers following a recent $800M multi-million dollar expansion.",
+        fact: "This is one of Perth's premier shopping centers following a recent $800M expansion.",
       },
       {
         time: "15:45",
@@ -854,52 +856,295 @@ const tripData = [
       },
     ],
   },
-];
+]; // <-- CLOSE the tripData array
+
+// NOW continue with the rest of your script...
+// (All the Parts 1-6 that you already have)
+
+// ===== PART 1: INIT & THEME SYSTEM =====
+
+// Trip data defined elsewhere or imported
 
 let currentDay = 1;
 let allActivities = [];
+let themeCheckInterval = null;
+
+// THEME CONFIGURATION
+
+const THEME_CONFIG = {
+  locations: {
+    margaretRiver: { lat: -33.95, lng: 115.08, name: "Margaret River" },
+    perth: { lat: -31.95, lng: 115.86, name: "Perth" },
+    singapore: { lat: 1.35, lng: 103.82, name: "Singapore" },
+  },
+  fallback: {
+    sunrise: 7 * 60 + 15, // 7:15 AM in minutes since midnight
+    sunset: 17 * 60 + 20, // 5:20 PM
+  },
+};
+
+// --- Initialization ---
 
 function init() {
-  loadTheme();
+  initThemeSystem();
   createDayTabs();
   showDay(1);
   startCountdown();
   setupSearch();
   setupFAB();
   setupCurrencyWidget();
-  setupThemeToggle();
   setupTripInfo();
 }
 
-function loadTheme() {
-  const savedTheme = localStorage.getItem("theme") || "light";
-  document.documentElement.setAttribute("data-theme", savedTheme);
+// --- Theme System Initialization ---
+
+function initThemeSystem() {
+  loadTheme();
+  setupThemeToggle();
+  startAutoThemeChecker();
 }
+
+// --- Load Theme from localStorage or Default Auto ---
+
+function loadTheme() {
+  const savedMode = localStorage.getItem("themeMode") || "auto";
+  applyThemeMode(savedMode, true);
+}
+
+// --- Setup Theme Toggle Button to cycle modes ---
 
 function setupThemeToggle() {
   const themeToggle = document.getElementById("themeToggle");
   if (!themeToggle) return;
-  const currentTheme =
-    document.documentElement.getAttribute("data-theme") || "light";
-
-  themeToggle.innerHTML =
-    currentTheme === "dark"
-      ? '<i class="fa-solid fa-sun"></i>'
-      : '<i class="fa-solid fa-moon"></i>';
 
   themeToggle.addEventListener("click", function () {
-    const current = document.documentElement.getAttribute("data-theme");
-    const newTheme = current === "dark" ? "light" : "dark";
+    const currentMode = localStorage.getItem("themeMode") || "auto";
+    let nextMode;
+    if (currentMode === "auto") nextMode = "light";
+    else if (currentMode === "light") nextMode = "dark";
+    else nextMode = "auto";
 
-    document.documentElement.setAttribute("data-theme", newTheme);
-    localStorage.setItem("theme", newTheme);
+    localStorage.setItem("themeMode", nextMode);
+    applyThemeMode(nextMode);
 
-    themeToggle.innerHTML =
-      newTheme === "dark"
-        ? '<i class="fa-solid fa-sun"></i>'
-        : '<i class="fa-solid fa-moon"></i>';
+    // Simple animation feedback
+    themeToggle.style.transform = "rotate(180deg) scale(0.9)";
+    setTimeout(() => {
+      themeToggle.style.transform = "";
+    }, 300);
   });
 }
+
+// --- Apply Theme Mode ---
+
+function applyThemeMode(mode, isInitial = false) {
+  const themeToggle = document.getElementById("themeToggle");
+
+  if (mode === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+    if (themeToggle)
+      themeToggle.innerHTML =
+        '<i class="fa-solid fa-sun"></i><span class="theme-mode-label">Light</span>';
+  } else if (mode === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    if (themeToggle)
+      themeToggle.innerHTML =
+        '<i class="fa-solid fa-moon"></i><span class="theme-mode-label">Dark</span>';
+  } else {
+    // Auto Mode: calculate based on time/sunrise/sunset
+    const shouldBeDark = isNightTime();
+    document.documentElement.setAttribute(
+      "data-theme",
+      shouldBeDark ? "dark" : "light"
+    );
+    if (themeToggle)
+      themeToggle.innerHTML =
+        '<i class="fa-solid fa-circle-half-stroke"></i><span class="theme-mode-label">Auto</span>';
+
+    if (!isInitial) {
+      showThemeNotification(
+        "Auto theme enabled • Based on " + getCurrentLocation().name
+      );
+    }
+  }
+}
+// ===== PART 2: THEME HELPERS & LOCATION DETECTION =====
+
+// --- Get Current Location based on trip dates ---
+
+function getCurrentLocation() {
+  const now = new Date();
+  const tripStart = new Date("2026-06-26");
+  const tripEnd = new Date("2026-07-06");
+
+  // Before or after trip: Singapore
+  if (now < tripStart || now > tripEnd) {
+    return THEME_CONFIG.locations.singapore;
+  }
+
+  // During trip: check which day
+  const dayNum = Math.ceil((now - tripStart) / (1000 * 60 * 60 * 24));
+
+  if (dayNum >= 1 && dayNum <= 5) {
+    return THEME_CONFIG.locations.margaretRiver;
+  } else {
+    return THEME_CONFIG.locations.perth;
+  }
+}
+
+// --- Check if it's Night Time based on sunrise/sunset ---
+
+function isNightTime() {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  try {
+    const location = getCurrentLocation();
+    const times = calculateSunTimes(location.lat, location.lng, now);
+
+    // Night time if before sunrise or after sunset
+    return currentMinutes < times.sunrise || currentMinutes > times.sunset;
+  } catch (error) {
+    console.warn("Sun calculation failed, using fallback times", error);
+    return (
+      currentMinutes < THEME_CONFIG.fallback.sunrise ||
+      currentMinutes > THEME_CONFIG.fallback.sunset
+    );
+  }
+}
+
+// --- Calculate Sunrise and Sunset times ---
+
+function calculateSunTimes(lat, lng, date) {
+  // Simplified sun calculation (accurate enough for theme switching)
+  // Based on: https://en.wikipedia.org/wiki/Sunrise_equation
+
+  const dayOfYear = Math.floor(
+    (date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+  );
+  const latRad = (lat * Math.PI) / 180;
+
+  // Solar declination
+  const declination =
+    -23.44 * Math.cos(((360 / 365) * (dayOfYear + 10) * Math.PI) / 180);
+  const declinationRad = (declination * Math.PI) / 180;
+
+  // Hour angle
+  const hourAngle = Math.acos(-Math.tan(latRad) * Math.tan(declinationRad));
+  const hourAngleDeg = (hourAngle * 180) / Math.PI;
+
+  // Solar noon (minutes from midnight)
+  const solarNoon = 720 - 4 * lng - date.getTimezoneOffset();
+
+  // Sunrise and sunset (minutes from midnight)
+  const sunrise = solarNoon - 4 * hourAngleDeg;
+  const sunset = solarNoon + 4 * hourAngleDeg;
+
+  return {
+    sunrise: Math.round(sunrise),
+    sunset: Math.round(sunset),
+  };
+}
+
+// --- Auto Theme Checker (runs every minute) ---
+
+function startAutoThemeChecker() {
+  // Clear any existing interval
+  if (themeCheckInterval) clearInterval(themeCheckInterval);
+
+  // Check every minute if in auto mode
+  themeCheckInterval = setInterval(() => {
+    const mode = localStorage.getItem("themeMode") || "auto";
+    if (mode === "auto") {
+      const shouldBeDark = isNightTime();
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+
+      // Only update if theme needs to change
+      if (
+        (shouldBeDark && currentTheme !== "dark") ||
+        (!shouldBeDark && currentTheme !== "light")
+      ) {
+        applyThemeMode("auto");
+        console.log("🌓 Auto theme switched:", shouldBeDark ? "dark" : "light");
+      }
+    }
+  }, 60000); // Check every minute
+
+  // Also check immediately
+  const mode = localStorage.getItem("themeMode") || "auto";
+  if (mode === "auto") {
+    applyThemeMode("auto", true);
+  }
+}
+
+// --- Show Theme Notification Toast ---
+
+function showThemeNotification(message) {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    box-shadow: var(--shadow-lg);
+    z-index: 9999;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+  }, 10);
+
+  // Animate out and remove
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(-20px)";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// --- Debug Info (accessible via console) ---
+
+window.getThemeDebugInfo = function () {
+  const location = getCurrentLocation();
+  const times = calculateSunTimes(location.lat, location.lng, new Date());
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return {
+    location: location.name,
+    currentTime: now.toLocaleTimeString(),
+    currentMinutes: currentMinutes,
+    sunrise:
+      Math.floor(times.sunrise / 60) +
+      ":" +
+      String(times.sunrise % 60).padStart(2, "0"),
+    sunset:
+      Math.floor(times.sunset / 60) +
+      ":" +
+      String(times.sunset % 60).padStart(2, "0"),
+    isNightTime: isNightTime(),
+    themeMode: localStorage.getItem("themeMode") || "auto",
+    currentTheme: document.documentElement.getAttribute("data-theme"),
+  };
+};
+// ===== PART 3: DAY NAVIGATION & ACTIVITY CARDS =====
+
+// --- Create Day Navigation Tabs ---
 
 function createDayTabs() {
   const tabsContainer = document.getElementById("dayTabs");
@@ -921,7 +1166,10 @@ function createDayTabs() {
   });
 }
 
+// --- Show Specific Day Content ---
+
 function showDay(dayNum) {
+  // Update active tab
   const tabs = document.querySelectorAll(".tab");
   tabs.forEach(function (tab, index) {
     if (index + 1 === dayNum) {
@@ -936,11 +1184,13 @@ function showDay(dayNum) {
     }
   });
 
+  // Get day data
   const dayData = tripData.find(function (d) {
     return d.day === dayNum;
   });
   if (!dayData) return;
 
+  // Update header info
   if (document.getElementById("currentDate"))
     document.getElementById("currentDate").textContent = dayData.date;
   if (document.getElementById("currentTitle"))
@@ -951,6 +1201,7 @@ function showDay(dayNum) {
     document.getElementById("insightIcon").innerHTML =
       '<i class="fa-solid ' + dayData.icon + '"></i>';
 
+  // Render activities
   const timeline = document.getElementById("timeline");
   if (timeline) {
     timeline.innerHTML = "";
@@ -975,15 +1226,19 @@ function showDay(dayNum) {
     });
   }
 
+  // Update weather and progress
   fetchWeather(dayNum);
   setTimeout(updateProgress, 100);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// --- Create Individual Activity Card ---
+
 function createActivityCard(activity, activityId) {
   const card = document.createElement("div");
   card.className = "activity";
 
+  // Determine tag label and class
   let tagLabel = "Activity";
   let tagClass = "tag-activity";
   if (activity.tag === "laundry") {
@@ -999,6 +1254,7 @@ function createActivityCard(activity, activityId) {
 
   const isChecked = getCheckboxState(activityId);
 
+  // Build HTML
   let html =
     '<div class="activity-header"><div class="time">' +
     activity.time +
@@ -1012,7 +1268,7 @@ function createActivityCard(activity, activityId) {
     " />";
   html +=
     '<div class="tag ' + tagClass + '">' + tagLabel + "</div></div></div>";
-  html += '<div class="desc">' + activity.desc + "</div>";
+  html += '<div class="desc">' + escapeHTML(activity.desc) + "</div>";
 
   if (activity.duration)
     html +=
@@ -1020,39 +1276,40 @@ function createActivityCard(activity, activityId) {
       activity.duration +
       "</div>";
 
-  // Renders the specific Tip OR Fact style based on what is in the data
+  // Render tip or fact
   if (activity.tip) {
     html +=
       '<div class="inline-tip"><i class="fa-solid fa-lightbulb"></i> ' +
-      activity.tip +
+      escapeHTML(activity.tip) +
       "</div>";
   }
   if (activity.fact) {
     html +=
       '<div class="inline-fact"><i class="fa-solid fa-circle-info"></i> ' +
-      activity.fact +
+      escapeHTML(activity.fact) +
       "</div>";
   }
 
+  // Add map and copy buttons if address exists
   if (activity.address) {
     const mapUrl =
       "https://www.google.com/maps/search/?api=1&query=" +
       encodeURIComponent(activity.address);
-    const safeAddress = activity.address.replace(/'/g, "\\'");
     html += '<div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">';
     html +=
       '<a href="' +
       mapUrl +
       '" target="_blank" rel="noopener" class="map-link"><i class="fa-solid fa-location-dot"></i> Open Map</a>';
     html +=
-      "<button onclick=\"copyAddress('" +
-      safeAddress +
-      '\', this)" class="map-link" style="background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border);"><i class="fa-regular fa-copy"></i> Copy</button>';
+      '<button class="map-link copy-address-btn" data-address="' +
+      escapeHTML(activity.address) +
+      '" style="background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border);"><i class="fa-regular fa-copy"></i> Copy</button>';
     html += "</div>";
   }
 
   card.innerHTML = html;
 
+  // Attach checkbox listener
   const checkbox = card.querySelector(".activity-checkbox");
   if (checkbox) {
     checkbox.addEventListener("change", function () {
@@ -1063,28 +1320,53 @@ function createActivityCard(activity, activityId) {
     });
   }
 
+  // Apply checked state styling
   if (isChecked) {
     card.style.opacity = "0.6";
     card.style.textDecoration = "line-through";
   }
+
   return card;
 }
 
-window.copyAddress = function (text, btn) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function () {
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-      btn.style.color = "var(--tip-color)";
-      btn.style.borderColor = "var(--tip-color)";
-      setTimeout(function () {
-        btn.innerHTML = originalHTML;
-        btn.style.color = "var(--text-primary)";
-        btn.style.borderColor = "var(--border)";
-      }, 2000);
-    });
+// --- Escape HTML to prevent XSS ---
+
+function escapeHTML(str) {
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// --- Handle Copy Address Button (Event Delegation) ---
+
+document.addEventListener("click", function (e) {
+  if (
+    e.target.classList.contains("copy-address-btn") ||
+    e.target.closest(".copy-address-btn")
+  ) {
+    const btn = e.target.classList.contains("copy-address-btn")
+      ? e.target
+      : e.target.closest(".copy-address-btn");
+    const address = btn.getAttribute("data-address");
+
+    if (navigator.clipboard && address) {
+      navigator.clipboard.writeText(address).then(function () {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        btn.style.color = "var(--tip-color)";
+        btn.style.borderColor = "var(--tip-color)";
+        setTimeout(function () {
+          btn.innerHTML = originalHTML;
+          btn.style.color = "var(--text-primary)";
+          btn.style.borderColor = "var(--border)";
+        }, 2000);
+      });
+    }
   }
-};
+});
+
+// --- Checkbox State Management ---
 
 function saveCheckboxState(id, checked) {
   let savedStates = JSON.parse(
@@ -1100,6 +1382,9 @@ function getCheckboxState(id) {
   );
   return savedStates[id] || false;
 }
+// ===== PART 4: SEARCH, COUNTDOWN & PROGRESS TRACKING =====
+
+// --- Countdown Timer to Trip Start ---
 
 function startCountdown() {
   const countdown = document.getElementById("countdown");
@@ -1112,265 +1397,268 @@ function startCountdown() {
       countdown.innerHTML = '<i class="fa-solid fa-plane"></i> Trip Started!';
       return;
     }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     countdown.innerHTML =
       '<i class="fa-solid fa-calendar"></i> ' +
-      Math.floor(diff / (1000 * 60 * 60 * 24)) +
-      " days until departure";
+      days +
+      " day" +
+      (days !== 1 ? "s" : "") +
+      " until departure";
   }
   update();
-  setInterval(update, 60000);
+  setInterval(update, 60000); // Update every minute
 }
+
+// --- Search Functionality - Dropdown Results ---
 
 function setupSearch() {
   const searchBox = document.getElementById("searchBox");
   const searchInfo = document.getElementById("searchInfo");
-  if (!searchBox || !searchInfo) return;
+  const searchResults = document.getElementById("searchResults");
+  const clearBtn = document.getElementById("clearSearch");
+
+  if (!searchBox || !searchInfo || !searchResults) return;
+
   let searchTimer;
 
+  // Search input handler
   searchBox.addEventListener("input", function (e) {
     clearTimeout(searchTimer);
+    const query = e.target.value.trim();
+
+    // Show/hide clear button
+    if (clearBtn) {
+      clearBtn.style.display = query ? "block" : "none";
+    }
+
     searchTimer = setTimeout(function () {
-      const query = e.target.value.toLowerCase().trim();
       if (query === "") {
-        allActivities.forEach(function (item) {
-          item.element.style.display = "block";
-          const desc = item.element.querySelector(".desc");
-          desc.innerHTML = desc.innerHTML.replace(
-            /<mark class="highlight">|<\/mark>/g,
-            ""
-          );
-        });
+        searchResults.classList.remove("active");
+        searchResults.innerHTML = "";
         searchInfo.textContent = "";
         return;
       }
-      let found = 0;
-      allActivities.forEach(function (item) {
-        if (item.text.includes(query)) {
-          item.element.style.display = "block";
-          found++;
-          const desc = item.element.querySelector(".desc");
-          desc.innerHTML = desc.innerHTML
-            .replace(/<mark class="highlight">|<\/mark>/g, "")
-            .replace(
-              new RegExp("(" + query + ")", "gi"),
-              '<mark class="highlight">$1</mark>'
-            );
-        } else {
-          item.element.style.display = "none";
-        }
-      });
-      searchInfo.textContent = found + " result" + (found !== 1 ? "s" : "");
-    }, 300);
-  });
-}
 
-function setupFAB() {
-  const fab = document.getElementById("fab");
-  const fabBtn = document.getElementById("fabBtn");
-  const jumpToday = document.getElementById("jumpToday");
-  const shareBtn = document.getElementById("shareBtn");
-  const emergencyBtn = document.getElementById("emergencyBtn");
-  const emergencyModal = document.getElementById("emergencyModal");
-  const closeEmergency = document.getElementById("closeEmergency");
-
-  if (!fab || !fabBtn) return;
-
-  fabBtn.addEventListener("click", function (e) {
-    e.stopPropagation();
-    fab.classList.toggle("active");
+      performSearch(query.toLowerCase());
+    }, 300); // Debounce 300ms
   });
 
-  if (jumpToday) {
-    jumpToday.addEventListener("click", function () {
-      const diff = new Date() - new Date("2026-06-26");
-      const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      if (daysDiff >= 1 && daysDiff <= 11) {
-        currentDay = daysDiff;
-        showDay(daysDiff);
-        createDayTabs();
-      } else {
-        alert("Trip not active yet or already ended");
-      }
-      closeFAB();
+  // Clear button handler
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      searchBox.value = "";
+      searchResults.classList.remove("active");
+      searchResults.innerHTML = "";
+      searchInfo.textContent = "";
+      clearBtn.style.display = "none";
+      searchBox.focus();
     });
   }
 
-  if (shareBtn) {
-    shareBtn.addEventListener("click", function () {
-      if (navigator.share)
-        navigator
-          .share({
-            title: "Perth Trip 2026",
-            text: "Check out our Perth itinerary",
-            url: window.location.href,
-          })
-          .catch(function () {});
-      else {
-        navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
-      }
-      closeFAB();
-    });
-  }
-
-  if (emergencyBtn && emergencyModal) {
-    emergencyBtn.addEventListener("click", function () {
-      emergencyModal.classList.add("active");
-      closeFAB();
-    });
-  }
-  if (closeEmergency) {
-    closeEmergency.addEventListener("click", function () {
-      emergencyModal.classList.remove("active");
-    });
-  }
-  if (emergencyModal) {
-    emergencyModal.addEventListener("click", function (e) {
-      if (e.target === emergencyModal)
-        emergencyModal.classList.remove("active");
-    });
-  }
+  // Close dropdown when clicking outside
   document.addEventListener("click", function (e) {
-    if (fab && !fab.contains(e.target)) closeFAB();
+    if (!e.target.closest(".search-bar")) {
+      searchResults.classList.remove("active");
+    }
+  });
+
+  // Reopen dropdown when clicking search box (if has results)
+  searchBox.addEventListener("focus", function () {
+    if (searchResults.innerHTML && searchBox.value.trim()) {
+      searchResults.classList.add("active");
+    }
   });
 }
 
-function closeFAB() {
-  const fab = document.getElementById("fab");
-  if (fab) fab.classList.remove("active");
-}
+// --- Perform Search Across All Days ---
 
-function setupTripInfo() {
-  const btn = document.getElementById("tripInfoBtn");
-  const modal = document.getElementById("tripInfoModal");
-  const closeBtn = document.getElementById("closeTripInfo");
-  if (!btn || !modal) return;
-  btn.addEventListener("click", function () {
-    modal.classList.add("active");
-  });
-  if (closeBtn)
-    closeBtn.addEventListener("click", function () {
-      modal.classList.remove("active");
-    });
-  modal.addEventListener("click", function (e) {
-    if (e.target === modal) modal.classList.remove("active");
-  });
-}
+function performSearch(query) {
+  const searchResults = document.getElementById("searchResults");
+  const searchInfo = document.getElementById("searchInfo");
+  const escapedQuery = escapeRegex(query);
 
-function setupCurrencyWidget() {
-  const widget = document.getElementById("currencyWidget");
-  const toggle = document.getElementById("currencyToggle");
-  const closeBtn = document.getElementById("closeCurrency");
-  const sgdInput = document.getElementById("sgdInput");
-  const audInput = document.getElementById("audInput");
-  const swapBtn = document.getElementById("swapBtn");
-  const quickBtns = document.querySelectorAll(".quick-btn");
+  let matchingActivities = [];
 
-  if (!widget || !toggle || !sgdInput || !audInput) return;
+  // Search all days
+  tripData.forEach(function (day) {
+    day.activities.forEach(function (activity, actIndex) {
+      const searchText = (
+        activity.desc +
+        " " +
+        (activity.address || "") +
+        " " +
+        (activity.tip || "") +
+        " " +
+        (activity.fact || "")
+      ).toLowerCase();
 
-  let currentRate = 0;
-  let isReversed = false;
-
-  toggle.addEventListener("click", function () {
-    widget.classList.toggle("active");
-    if (widget.classList.contains("active") && currentRate === 0)
-      fetchExchangeRate();
-  });
-
-  if (closeBtn)
-    closeBtn.addEventListener("click", function () {
-      widget.classList.remove("active");
-    });
-  document.addEventListener("click", function (e) {
-    if (!widget.contains(e.target)) widget.classList.remove("active");
-  });
-
-  sgdInput.addEventListener("input", function () {
-    if (!isReversed)
-      audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
-  });
-
-  if (swapBtn) {
-    swapBtn.addEventListener("click", function () {
-      isReversed = !isReversed;
-      const labels = document.querySelectorAll(".currency-input-group label");
-      if (isReversed) {
-        sgdInput.removeAttribute("readonly");
-        audInput.removeAttribute("readonly");
-        sgdInput.setAttribute("readonly", "true");
-        if (labels.length > 1) {
-          labels.textContent = "Australian Dollar (AUD)";
-          labels.textContent = "Singapore Dollar (SGD)";
-        }
-        audInput.addEventListener("input", convertReverse);
-      } else {
-        audInput.setAttribute("readonly", "true");
-        sgdInput.removeAttribute("readonly");
-        if (labels.length > 1) {
-          labels.textContent = "Singapore Dollar (SGD)";
-          labels.textContent = "Australian Dollar (AUD)";
-        }
-        audInput.removeEventListener("input", convertReverse);
-        sgdInput.dispatchEvent(new Event("input"));
-      }
-    });
-  }
-
-  function convertReverse() {
-    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(
-      2
-    );
-  }
-
-  quickBtns.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const amount = this.getAttribute("data-amount");
-      if (isReversed) {
-        audInput.value = amount;
-        audInput.dispatchEvent(new Event("input"));
-      } else {
-        sgdInput.value = amount;
-        sgdInput.dispatchEvent(new Event("input"));
+      if (searchText.includes(query)) {
+        matchingActivities.push({
+          day: day.day,
+          dayTitle: day.title,
+          activity: activity,
+          activityIndex: actIndex,
+        });
       }
     });
   });
 
-  function fetchExchangeRate() {
-    const rateDisplay = document.getElementById("exchangeRate");
-    const updatedDisplay = document.getElementById("lastUpdated");
-    if (rateDisplay) rateDisplay.textContent = "Loading...";
-    if (updatedDisplay) updatedDisplay.textContent = "Fetching rates...";
+  // Display results
+  if (matchingActivities.length === 0) {
+    searchInfo.textContent = "No results";
+    searchResults.innerHTML =
+      '<div class="search-no-results"><i class="fa-solid fa-magnifying-glass" style="font-size:2rem; opacity:0.3; margin-bottom:0.5rem;"></i><br>No activities found for "' +
+      escapeHTML(query) +
+      '"</div>';
+    searchResults.classList.add("active");
+  } else {
+    searchInfo.textContent =
+      matchingActivities.length +
+      " result" +
+      (matchingActivities.length !== 1 ? "s" : "");
 
-    fetch("https://api.exchangerate-api.com/v4/latest/SGD")
-      .then(function (response) {
-        return response.json();
-      })
-      .then(function (data) {
-        currentRate = data.rates.AUD;
-        if (rateDisplay)
-          rateDisplay.textContent =
-            "1 SGD = " + currentRate.toFixed(4) + " AUD";
-        if (updatedDisplay)
-          updatedDisplay.textContent =
-            "Updated at " +
-            new Date().toLocaleTimeString("en-SG", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-        sgdInput.dispatchEvent(new Event("input"));
-      })
-      .catch(function (error) {
-        if (rateDisplay) rateDisplay.textContent = "Error loading rate";
-        if (updatedDisplay) updatedDisplay.textContent = "Please try again";
+    // Build results HTML
+    let resultsHTML = "";
+    matchingActivities.forEach(function (match) {
+      const highlightedDesc = escapeHTML(match.activity.desc).replace(
+        new RegExp("(" + escapedQuery + ")", "gi"),
+        '<mark class="highlight">$1</mark>'
+      );
+
+      resultsHTML +=
+        '<div class="search-result-item" data-day="' + match.day + '">';
+      resultsHTML +=
+        '<div class="search-result-day">Day ' +
+        match.day +
+        " • " +
+        match.dayTitle +
+        "</div>";
+      resultsHTML +=
+        '<div class="search-result-time">' + match.activity.time + "</div>";
+      resultsHTML +=
+        '<div class="search-result-desc">' + highlightedDesc + "</div>";
+
+      if (match.activity.address) {
+        resultsHTML +=
+          '<div class="search-result-meta"><i class="fa-solid fa-location-dot"></i> ' +
+          escapeHTML(match.activity.address) +
+          "</div>";
+      }
+
+      resultsHTML += "</div>";
+    });
+
+    searchResults.innerHTML = resultsHTML;
+    searchResults.classList.add("active");
+
+    // Add click handlers to navigate to day
+    searchResults
+      .querySelectorAll(".search-result-item")
+      .forEach(function (item) {
+        item.addEventListener("click", function () {
+          const dayNum = parseInt(this.getAttribute("data-day"));
+          currentDay = dayNum;
+          showDay(dayNum);
+          searchResults.classList.remove("active");
+
+          // Scroll to top smoothly
+          window.scrollTo({ top: 0, behavior: "smooth" });
+
+          // Optional: Clear search after selection
+          // document.getElementById('searchBox').value = '';
+          // document.getElementById('searchInfo').textContent = '';
+        });
       });
   }
-  fetchExchangeRate();
-  setInterval(fetchExchangeRate, 300000);
 }
+
+// --- Render Search Results Grouped by Day ---
+
+function renderSearchResults(matches, escapedQuery) {
+  const timeline = document.getElementById("timeline");
+  if (!timeline) return;
+
+  timeline.innerHTML = "";
+  allActivities = [];
+
+  let currentDayInResults = null;
+
+  matches.forEach(function (match, index) {
+    // Add day header if it's a new day
+    if (currentDayInResults !== match.day) {
+      currentDayInResults = match.day;
+
+      const dayHeader = document.createElement("div");
+      dayHeader.className = "search-day-header";
+      dayHeader.innerHTML =
+        '<div style="display:flex; align-items:center; gap:1rem; margin:2rem 0 1rem; padding-bottom:0.75rem; border-bottom:2px solid var(--border);">' +
+        '<span style="font-size:0.85rem; font-weight:700; color:var(--accent-3); text-transform:uppercase; letter-spacing:0.1em;">Day ' +
+        match.day +
+        "</span>" +
+        '<span style="font-size:0.95rem; color:var(--text-secondary); font-weight:500;">' +
+        match.dayTitle +
+        "</span>" +
+        "</div>";
+      timeline.appendChild(dayHeader);
+    }
+
+    // Create activity card
+    const activityId = "search-day" + match.day + "-activity" + index;
+    const card = createActivityCard(match.activity, activityId);
+
+    // Highlight matching text
+    const desc = card.querySelector(".desc");
+    if (desc) {
+      desc.innerHTML = desc.innerHTML.replace(
+        new RegExp("(" + escapedQuery + ")", "gi"),
+        '<mark class="highlight">$1</mark>'
+      );
+    }
+
+    timeline.appendChild(card);
+    allActivities.push({
+      element: card,
+      text: "",
+    });
+  });
+}
+
+// --- Escape Regex Special Characters ---
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^\${}()|[\]\\]/g, "\\__CODE_0__");
+}
+
+// --- Update Daily Progress Bar ---
+
+function updateProgress() {
+  const checkboxes = document.querySelectorAll(".activity-checkbox");
+  const dayProgress = document.getElementById("dayProgress");
+  const progressText = document.getElementById("progressText");
+
+  if (!dayProgress || !progressText) return;
+
+  if (checkboxes.length === 0) {
+    dayProgress.style.width = "0%";
+    progressText.textContent = "0% (0/0)";
+    return;
+  }
+
+  const checkedBoxes = document.querySelectorAll(".activity-checkbox:checked");
+  const percent = Math.round((checkedBoxes.length / checkboxes.length) * 100);
+
+  dayProgress.style.width = percent + "%";
+  progressText.textContent =
+    percent + "% (" + checkedBoxes.length + "/" + checkboxes.length + ")";
+}
+// ===== PART 5: WEATHER WIDGET & CURRENCY CONVERTER =====
+
+// --- Fetch Weather Data (with fallback) ---
 
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
   if (!weatherDiv) return;
+
   weatherDiv.style.flexDirection = "column";
   weatherDiv.style.alignItems = "flex-start";
   weatherDiv.style.gap = "0.25rem";
@@ -1387,6 +1675,7 @@ async function fetchWeather(dayNum) {
       "&longitude=" +
       (isDownSouth ? 115.08 : 115.86) +
       "&current=temperature_2m,weather_code,apparent_temperature,wind_speed_10m&hourly=precipitation_probability&timezone=Australia%2FPerth&forecast_days=2";
+
     const response = await fetch(url);
     if (!response.ok) throw new Error("API Blocked");
 
@@ -1400,6 +1689,7 @@ async function fetchWeather(dayNum) {
     const rainChance =
       timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
 
+    // Weather icon mapping
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
     else if (code >= 1 && code <= 3) icon = "fa-cloud-sun";
@@ -1427,6 +1717,8 @@ async function fetchWeather(dayNum) {
       "%</span></div>";
     weatherDiv.innerHTML = html;
   } catch (error) {
+    console.warn("Weather API unavailable, using estimates");
+    // Fallback mock data
     const mockTemp = isDownSouth ? 14 : 18;
     let html =
       '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;"><i class="fa-solid ' +
@@ -1446,24 +1738,338 @@ async function fetchWeather(dayNum) {
   }
 }
 
-function updateProgress() {
-  const checkboxes = document.querySelectorAll(".activity-checkbox");
-  const dayProgress = document.getElementById("dayProgress");
-  const progressText = document.getElementById("progressText");
+// --- Setup Currency Widget ---
 
-  if (!dayProgress || !progressText) return;
-  if (checkboxes.length === 0) {
-    dayProgress.style.width = "0%";
-    progressText.textContent = "0% (0/0)";
-    return;
+function setupCurrencyWidget() {
+  const widget = document.getElementById("currencyWidget");
+  const toggle = document.getElementById("currencyToggle");
+  const closeBtn = document.getElementById("closeCurrency");
+  const sgdInput = document.getElementById("sgdInput");
+  const audInput = document.getElementById("audInput");
+  const swapBtn = document.getElementById("swapBtn");
+  const quickBtns = document.querySelectorAll(".quick-btn");
+
+  if (!widget || !toggle || !sgdInput || !audInput) return;
+
+  let currentRate = 0;
+  let isReversed = false;
+
+  // Toggle panel open/close
+  toggle.addEventListener("click", function () {
+    widget.classList.toggle("active");
+    if (widget.classList.contains("active") && currentRate === 0) {
+      fetchExchangeRate();
+    }
+  });
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      widget.classList.remove("active");
+    });
   }
 
-  const checkedBoxes = document.querySelectorAll(".activity-checkbox:checked");
-  const percent = Math.round((checkedBoxes.length / checkboxes.length) * 100);
+  // Close when clicking outside
+  document.addEventListener("click", function (e) {
+    if (!widget.contains(e.target)) {
+      widget.classList.remove("active");
+    }
+  });
 
-  dayProgress.style.width = percent + "%";
-  progressText.textContent =
-    percent + "% (" + checkedBoxes.length + "/" + checkboxes.length + ")";
+  // SGD input conversion
+  sgdInput.addEventListener("input", function () {
+    if (!isReversed) {
+      audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
+    }
+  });
+
+  // Swap currencies button
+  if (swapBtn) {
+    swapBtn.addEventListener("click", function () {
+      isReversed = !isReversed;
+      const labels = document.querySelectorAll(".currency-input-group label");
+
+      if (isReversed) {
+        sgdInput.removeAttribute("readonly");
+        audInput.removeAttribute("readonly");
+        sgdInput.setAttribute("readonly", "true");
+
+        if (labels.length > 1) {
+          labels.textContent = "Australian Dollar (AUD)";
+          labels.textContent = "Singapore Dollar (SGD)";
+        }
+
+        audInput.addEventListener("input", convertReverse);
+      } else {
+        audInput.setAttribute("readonly", "true");
+        sgdInput.removeAttribute("readonly");
+
+        if (labels.length > 1) {
+          labels.textContent = "Singapore Dollar (SGD)";
+          labels.textContent = "Australian Dollar (AUD)";
+        }
+
+        audInput.removeEventListener("input", convertReverse);
+        sgdInput.dispatchEvent(new Event("input"));
+      }
+    });
+  }
+
+  function convertReverse() {
+    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(
+      2
+    );
+  }
+
+  // Quick amount buttons
+  quickBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const amount = this.getAttribute("data-amount");
+      if (isReversed) {
+        audInput.value = amount;
+        audInput.dispatchEvent(new Event("input"));
+      } else {
+        sgdInput.value = amount;
+        sgdInput.dispatchEvent(new Event("input"));
+      }
+    });
+  });
+
+  // Fetch exchange rate from API
+  function fetchExchangeRate() {
+    const rateDisplay = document.getElementById("exchangeRate");
+    const updatedDisplay = document.getElementById("lastUpdated");
+
+    if (rateDisplay) rateDisplay.textContent = "Loading...";
+    if (updatedDisplay) updatedDisplay.textContent = "Fetching rates...";
+
+    fetch("https://api.exchangerate-api.com/v4/latest/SGD")
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        currentRate = data.rates.AUD;
+        if (rateDisplay) {
+          rateDisplay.textContent =
+            "1 SGD = " + currentRate.toFixed(4) + " AUD";
+        }
+        if (updatedDisplay) {
+          updatedDisplay.textContent =
+            "Updated at " +
+            new Date().toLocaleTimeString("en-SG", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+        }
+        sgdInput.dispatchEvent(new Event("input"));
+      })
+      .catch(function (error) {
+        console.warn("Currency API failed:", error);
+        if (rateDisplay) rateDisplay.textContent = "Error loading rate";
+        if (updatedDisplay) updatedDisplay.textContent = "Please try again";
+      });
+  }
+
+  // Initial fetch and auto-refresh every 5 minutes
+  fetchExchangeRate();
+  setInterval(fetchExchangeRate, 300000);
+}
+// ===== PART 6: FAB MENU, MODALS & TRIP INFO =====
+
+// --- Setup Floating Action Button (FAB) Menu ---
+
+function setupFAB() {
+  const fab = document.getElementById("fab");
+  const fabBtn = document.getElementById("fabBtn");
+  const jumpToday = document.getElementById("jumpToday");
+  const shareBtn = document.getElementById("shareBtn");
+  const emergencyBtn = document.getElementById("emergencyBtn");
+  const emergencyModal = document.getElementById("emergencyModal");
+  const closeEmergency = document.getElementById("closeEmergency");
+
+  if (!fab || !fabBtn) return;
+
+  // Toggle FAB menu
+  fabBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    fab.classList.toggle("active");
+  });
+
+  // Jump to Today button
+  if (jumpToday) {
+    jumpToday.addEventListener("click", function () {
+      const tripStart = new Date("2026-06-26");
+      const now = new Date();
+      const diff = now - tripStart;
+      const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+      if (daysDiff >= 1 && daysDiff <= 11) {
+        currentDay = daysDiff;
+        showDay(daysDiff);
+        createDayTabs(); // Refresh tabs to show active state
+      } else {
+        alert("Trip not active yet or already ended");
+      }
+      closeFAB();
+    });
+  }
+
+  // Share button
+  if (shareBtn) {
+    shareBtn.addEventListener("click", function () {
+      if (navigator.share) {
+        navigator
+          .share({
+            title: "Perth Trip 2026",
+            text: "Check out our Perth itinerary!",
+            url: window.location.href,
+          })
+          .catch(function (error) {
+            console.log("Share cancelled or failed:", error);
+          });
+      } else {
+        // Fallback: Copy to clipboard
+        navigator.clipboard
+          .writeText(window.location.href)
+          .then(function () {
+            alert("Link copied to clipboard!");
+          })
+          .catch(function () {
+            alert("Unable to share. Copy this URL: " + window.location.href);
+          });
+      }
+      closeFAB();
+    });
+  }
+
+  // Emergency info button
+  if (emergencyBtn && emergencyModal) {
+    emergencyBtn.addEventListener("click", function () {
+      emergencyModal.classList.add("active");
+      document.body.style.overflow = "hidden"; // Prevent body scroll
+      closeFAB();
+    });
+  }
+
+  // Close emergency modal
+  if (closeEmergency && emergencyModal) {
+    closeEmergency.addEventListener("click", function () {
+      emergencyModal.classList.remove("active");
+      document.body.style.overflow = ""; // Restore body scroll
+    });
+  }
+
+  // Close modal on backdrop click
+  if (emergencyModal) {
+    emergencyModal.addEventListener("click", function (e) {
+      if (e.target === emergencyModal) {
+        emergencyModal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+  }
+
+  // Close FAB when clicking outside
+  document.addEventListener("click", function (e) {
+    if (fab && !fab.contains(e.target)) {
+      closeFAB();
+    }
+  });
+
+  // Close modal with ESC key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (emergencyModal && emergencyModal.classList.contains("active")) {
+        emergencyModal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    }
+  });
 }
 
+// --- Close FAB Menu ---
+
+function closeFAB() {
+  const fab = document.getElementById("fab");
+  if (fab) fab.classList.remove("active");
+}
+
+// --- Setup Trip Info Modal ---
+
+function setupTripInfo() {
+  const btn = document.getElementById("tripInfoBtn");
+  const modal = document.getElementById("tripInfoModal");
+  const closeBtn = document.getElementById("closeTripInfo");
+
+  if (!btn || !modal) return;
+
+  // Open trip info modal
+  btn.addEventListener("click", function () {
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden"; // Prevent body scroll
+  });
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      modal.classList.remove("active");
+      document.body.style.overflow = "";
+    });
+  }
+
+  // Close on backdrop click
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) {
+      modal.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  });
+
+  // Close with ESC key
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (modal.classList.contains("active")) {
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    }
+  });
+}
+
+// --- Initialize App on Page Load ---
+
 window.addEventListener("load", init);
+// ===== AUTO-HIDE SEARCH & NAV ON SCROLL =====
+
+let lastScrollTop = 0;
+let scrollTimeout;
+
+window.addEventListener("scroll", function () {
+  clearTimeout(scrollTimeout);
+
+  scrollTimeout = setTimeout(function () {
+    const currentScroll =
+      window.pageYOffset || document.documentElement.scrollTop;
+
+    // At the very top
+    if (currentScroll <= 50) {
+      document.body.classList.add("at-top");
+      document.body.classList.remove("scrolling-down", "scrolling-up");
+    }
+    // Scrolling down
+    else if (currentScroll > lastScrollTop && currentScroll > 150) {
+      document.body.classList.add("scrolling-down");
+      document.body.classList.remove("scrolling-up", "at-top");
+    }
+    // Scrolling up
+    else if (currentScroll < lastScrollTop) {
+      document.body.classList.add("scrolling-up");
+      document.body.classList.remove("scrolling-down", "at-top");
+    }
+
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+  }, 100); // Debounce for smoother performance
+});
+
+// Initialize at-top state
+document.body.classList.add("at-top");

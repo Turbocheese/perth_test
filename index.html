@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- For standard browsers -->
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <!-- For Apple devices -->
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <!-- Link to your Web App Manifest -->
+    <link rel="manifest" href="manifest.json" />
+
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -28,6 +35,12 @@
   </head>
   <body>
     <header>
+      <div class="header-icons">
+        <i class="fa-solid fa-plane-departure"></i>
+        <i class="fa-solid fa-wine-glass"></i>
+        <i class="fa-solid fa-mountain"></i>
+        <i class="fa-solid fa-camera"></i>
+      </div>
       <span class="label">Family Trip</span>
       <h1>Perth 2026</h1>
       <p class="subtitle">26 June - 5 July</p>
@@ -35,9 +48,10 @@
       <button
         class="theme-toggle"
         id="themeToggle"
-        aria-label="Toggle dark mode"
+        aria-label="Toggle theme mode"
       >
-        <i class="fa-solid fa-moon"></i>
+        <i class="fa-solid fa-circle-half-stroke"></i>
+        <span class="theme-mode-label">Auto</span>
       </button>
     </header>
 
@@ -52,6 +66,8 @@
         />
       </div>
       <div class="search-info" id="searchInfo"></div>
+      <div class="search-results-dropdown" id="searchResults"></div>
+</div>
     </div>
 
     <div class="nav-bar">
@@ -139,10 +155,10 @@
         <div class="quick-amounts">
           <div class="quick-title">Quick Convert</div>
           <div class="quick-grid">
-            <button class="quick-btn" data-amount="50">\$50</button>
-            <button class="quick-btn" data-amount="100">\$100</button>
-            <button class="quick-btn" data-amount="200">\$200</button>
-            <button class="quick-btn" data-amount="500">\$500</button>
+            <button class="quick-btn" data-amount="50">$50</button>
+            <button class="quick-btn" data-amount="100">$100</button>
+            <button class="quick-btn" data-amount="200">$200</button>
+            <button class="quick-btn" data-amount="500">$500</button>
           </div>
         </div>
       </div>
@@ -280,6 +296,19 @@
       </div>
     </div>
 
-    <script src="script.js?v=12"></script>
+    <!-- Quick theme initialization to prevent flash -->
+    <script>
+      (function () {
+        const savedMode = localStorage.getItem("themeMode") || "auto";
+        if (savedMode === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        } else if (savedMode === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+        // Auto mode will be calculated by main script
+      })();
+    </script>
+
+    <script src="script.js?v=13"></script>
   </body>
 </html>
