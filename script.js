@@ -1331,7 +1331,7 @@ function setupCurrencyWidget() {
   setInterval(fetchExchangeRate, 300000);
 }
 
-// NEW FUNCTION: Live Weather (Updated V2 Syntax)
+// NEW FUNCTION: Live Weather (Fixed URL with Timezone)
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
   if (!weatherDiv) return;
@@ -1339,22 +1339,25 @@ async function fetchWeather(dayNum) {
     '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
 
   const isDownSouth = dayNum <= 5;
-  const lat = isDownSouth ? -33.955 : -31.9505;
-  const lon = isDownSouth ? 115.075 : 115.8605;
+  // Simplified the coordinates slightly for better API matching
+  const lat = isDownSouth ? -33.95 : -31.95;
+  const lon = isDownSouth ? 115.08 : 115.86;
   const locationName = isDownSouth ? "Margaret River" : "Perth";
 
   try {
-    // Using the newer 'current=temperature_2m,weather_code' syntax
-    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current=temperature_2m,weather_code`;
+    // FIX: Added &timezone=auto which Open-Meteo requires!
+    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current_weather=true&timezone=auto`;
 
     const response = await fetch(url);
-    if (!response.ok) throw new Error("API blocked or unavailable");
+
+    if (!response.ok) {
+      const serverError = await response.text();
+      throw new Error("Server rejected request: " + serverError);
+    }
 
     const data = await response.json();
-
-    // The new syntax stores data inside data.current
-    const temp = Math.round(data.current.temperature_2m);
-    const code = data.current.weather_code;
+    const temp = Math.round(data.current_weather.temperature);
+    const code = data.current_weather.weathercode;
 
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
@@ -1365,7 +1368,7 @@ async function fetchWeather(dayNum) {
 
     weatherDiv.innerHTML = `<i class="fa-solid \${icon}"></i> \${temp}°C in \${locationName}`;
   } catch (error) {
-    console.error("Weather API Error:", error);
+    console.error("Detailed Weather Error:", error);
     const fallbackTemp = isDownSouth ? "15" : "18";
     weatherDiv.innerHTML = `<i class="fa-solid fa-cloud-sun"></i> ~\${fallbackTemp}°C (Winter Avg)`;
   }
