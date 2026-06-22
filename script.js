@@ -1331,7 +1331,7 @@ function setupCurrencyWidget() {
   setInterval(fetchExchangeRate, 300000);
 }
 
-// NEW FUNCTION: Live Weather (With graceful fallback)
+// NEW FUNCTION: Live Weather (Updated V2 Syntax)
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
   if (!weatherDiv) return;
@@ -1344,13 +1344,17 @@ async function fetchWeather(dayNum) {
   const locationName = isDownSouth ? "Margaret River" : "Perth";
 
   try {
-    const response = await fetch(
-      `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current_weather=true`
-    );
+    // Using the newer 'current=temperature_2m,weather_code' syntax
+    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current=temperature_2m,weather_code`;
+
+    const response = await fetch(url);
     if (!response.ok) throw new Error("API blocked or unavailable");
+
     const data = await response.json();
-    const temp = Math.round(data.current_weather.temperature);
-    const code = data.current_weather.weathercode;
+
+    // The new syntax stores data inside data.current
+    const temp = Math.round(data.current.temperature_2m);
+    const code = data.current.weather_code;
 
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
@@ -1361,9 +1365,7 @@ async function fetchWeather(dayNum) {
 
     weatherDiv.innerHTML = `<i class="fa-solid \${icon}"></i> \${temp}°C in \${locationName}`;
   } catch (error) {
-    console.error("Weather API Error:", error); // Helps debugging!
-
-    // If GitHub, Brave Browser, or an AdBlocker blocks the API, show the historical Winter Average!
+    console.error("Weather API Error:", error);
     const fallbackTemp = isDownSouth ? "15" : "18";
     weatherDiv.innerHTML = `<i class="fa-solid fa-cloud-sun"></i> ~\${fallbackTemp}°C (Winter Avg)`;
   }
