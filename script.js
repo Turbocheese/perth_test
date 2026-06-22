@@ -1346,7 +1346,7 @@ async function fetchWeather(dayNum) {
 
   try {
     // FIX: Added &timezone=auto which Open-Meteo requires!
-    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current_weather=true&timezone=auto`;
+    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current_weather=true&timezone=Australia%2FPerth`;
 
     const response = await fetch(url);
 
