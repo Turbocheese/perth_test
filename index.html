@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- For standard browsers -->
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
-    <!-- For Apple devices -->
     <link rel="apple-touch-icon" href="icon.svg" />
-    <!-- Link to your Web App Manifest -->
     <link rel="manifest" href="manifest.json" />
 
     <meta charset="UTF-8" />
@@ -21,11 +18,13 @@
       content="black-translucent"
     />
     <meta name="apple-mobile-web-app-title" content="Perth 2026" />
-    <link
-      rel="apple-touch-icon"
-      href="https://cdn-icons-png.flaticon.com/512/2353/2353341.png"
-    />
     <meta name="theme-color" content="#1e3a5f" />
+
+    <!-- Leaflet CSS for Map (MUST be here) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
 
     <link rel="stylesheet" href="styles.css" />
     <link
@@ -64,10 +63,12 @@
           id="searchBox"
           placeholder="Search activities, locations..."
         />
+        <button class="clear-search" id="clearSearch" style="display: none">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
       <div class="search-info" id="searchInfo"></div>
       <div class="search-results-dropdown" id="searchResults"></div>
-</div>
     </div>
 
     <div class="nav-bar">
@@ -155,10 +156,11 @@
         <div class="quick-amounts">
           <div class="quick-title">Quick Convert</div>
           <div class="quick-grid">
-            <button class="quick-btn" data-amount="50">$50</button>
-            <button class="quick-btn" data-amount="100">$100</button>
-            <button class="quick-btn" data-amount="200">$200</button>
-            <button class="quick-btn" data-amount="500">$500</button>
+            <!-- Changed to SGD to stop the platform from adding slashes -->
+            <button class="quick-btn" data-amount="50">SGD 50</button>
+            <button class="quick-btn" data-amount="100">SGD 100</button>
+            <button class="quick-btn" data-amount="200">SGD 200</button>
+            <button class="quick-btn" data-amount="500">SGD 500</button>
           </div>
         </div>
       </div>
@@ -170,12 +172,15 @@
         <span class="hide-mobile"> Trip Info</span>
       </button>
     </div>
-
+    <!-- Floating Action Button (Menu) -->
     <div class="fab" id="fab">
       <button class="fab-btn" id="fabBtn" aria-label="Open menu">
         <i class="fa-solid fa-bars"></i>
       </button>
       <div class="fab-menu">
+        <button class="fab-option" onclick="openMap()">
+          <i class="fa-solid fa-map-location-dot"></i> View Map
+        </button>
         <button class="fab-option" id="jumpToday">
           <i class="fa-solid fa-calendar-day"></i> Go to Today
         </button>
@@ -196,54 +201,29 @@
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-
         <div class="modal-body">
           <div class="info-grid">
             <div class="info-card">
               <h4>Car Rental</h4>
               <p>
-                <strong>H20 Car Rentals</strong><br />
-                Kia Carnival<br />
-                Booking: #3761<br />
-                Steven Yii: +61 490 438035
+                <strong>H20 Car Rentals</strong><br />Kia Carnival<br />Booking:
+                #3761<br />Steven Yii: +61 490 438035
               </p>
             </div>
-
             <div class="info-card">
               <h4>Flights</h4>
               <p>
-                Scoot TR8 (SIN→PER)<br />
-                Scoot TR17 (PER→SIN)<br />
-                Booking: BYLSMW &amp; GB3MMW<br /><br />
-                <strong>Outbound seats:</strong> 17A, 17B, 17C / 18B, 18C<br />
-                <strong>Inbound seats:</strong> 17K, 17J, 17H / 18J, 18H
+                Scoot TR8 (SIN→PER)<br />Scoot TR17 (PER→SIN)<br />Booking:
+                BYLSMW &amp; GB3MMW
               </p>
             </div>
-
-            <div class="info-card">
-              <h4>Baggage</h4>
-              <p>
-                Outbound: 20kg each<br />
-                Return: Nic/Russ/Ryan 25kg, Sue 30kg
-              </p>
-            </div>
-
-            <div class="info-card">
-              <h4>Insurance</h4>
-              <p>
-                <strong>Singlife</strong><br />
-                Policy: 60318431<br />
-                <a href="tel:+6564609391">+65 6460-9391</a>
-              </p>
-            </div>
-
             <div class="info-card highlight-card">
               <h4><i class="fa-solid fa-cloud-moon"></i> Winter Profile</h4>
               <p>
-                <strong>Temps:</strong> 8°C - 18°C<br />
-                <strong>Sunrise:</strong> ~7:15 AM<br />
-                <strong>Sunset:</strong> ~5:20 PM<br />
-                <em>Tip: Coastal winds are chilly. Dress in layers!</em>
+                <strong>Temps:</strong> 8°C - 18°C<br /><strong
+                  >Sunrise:</strong
+                >
+                ~7:15 AM<br /><strong>Sunset:</strong> ~5:20 PM
               </p>
             </div>
           </div>
@@ -259,16 +239,11 @@
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-
         <div class="modal-body">
           <div class="emergency-item">
-            <strong
-              ><i class="fa-solid fa-phone"></i> AU Emergency
-              (Police/Fire/Ambulance)</strong
-            >
+            <strong><i class="fa-solid fa-phone"></i> AU Emergency</strong>
             <a href="tel:000">000</a>
           </div>
-
           <div class="emergency-item">
             <strong
               ><i class="fa-solid fa-car-burst"></i> H20 Car Rentals
@@ -276,49 +251,44 @@
             >
             <a href="tel:+61490438035">+61 490 438035</a>
           </div>
-
-          <div class="emergency-item">
-            <strong
-              ><i class="fa-solid fa-passport"></i> SG High Commission
-              (Canberra)</strong
-            >
-            <a href="tel:+61262703000">+61 2 6270 3000</a>
-          </div>
-
-          <div class="emergency-item">
-            <strong
-              ><i class="fa-solid fa-file-shield"></i> Travel Insurance</strong
-            >
-            <span>Singlife · Policy 60318431</span><br />
-            <a href="tel:+6564609391">+65 6460-9391</a>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Quick theme initialization to prevent flash -->
-    <script>
-      (function () {
-        const savedMode = localStorage.getItem("themeMode") || "auto";
-        if (savedMode === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        } else if (savedMode === "dark") {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
-        // Auto mode will be calculated by main script
-      })();
-    </script>
-<!-- Scroll to Top Button -->
-<button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
-  <i class="fa-solid fa-chevron-up"></i>
-</button>
+    <!-- Map Modal -->
+    <div class="modal-overlay" id="mapModal">
+      <div class="modal-content map-modal-content">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-map-location-dot"></i> Trip Map</h3>
+          <button class="close-modal" id="closeMap">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
 
-<script src="script.js?v=13"></script>
+        <div class="map-controls">
+          <button class="map-filter-btn active" data-filter="all">
+            All Days
+          </button>
+          <button class="map-filter-btn" data-filter="1-5">Days 1-5</button>
+          <button class="map-filter-btn" data-filter="6-11">Days 6-11</button>
+        </div>
+
+        <div class="modal-body" style="padding: 0; height: 70vh">
+          <div
+            id="tripMap"
+            style="width: 100%; height: 100%; min-height: 400px"
+          ></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Scroll to Top Button -->
     <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
       <i class="fa-solid fa-chevron-up"></i>
     </button>
+
+    <!-- Next Activity Timer -->
+    <div class="next-activity-timer" id="nextActivityTimer"></div>
 
     <!-- Install App Prompt -->
     <div class="install-prompt" id="installPrompt">
@@ -330,24 +300,31 @@
       </button>
     </div>
 
-    <!-- PWA Service Worker Registration -->
+    <!-- Theme initialization -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('✅ Service Worker registered:', registration.scope);
-            })
-            .catch(function(error) {
-              console.log('❌ Service Worker registration failed:', error);
-            });
+      (function () {
+        const savedMode = localStorage.getItem("themeMode") || "auto";
+        if (savedMode === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        } else if (savedMode === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- PWA Service Worker -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
         });
       }
     </script>
 
-    <script src="script.js?v=14"></script>
-  </body>
-</html>
-
+    <!-- MAIN SCRIPT (ONLY ONE!) -->
+    <script src="script.js"></script>
   </body>
 </html>

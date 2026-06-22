@@ -1,24 +1,6 @@
-// ===== TOUCH DEVICE DETECTION & OPTIMIZATION =====
-
-(function detectAndOptimize() {
-  const isTouchDevice =
-    "ontouchstart" in window ||
-    navigator.maxTouchPoints > 0 ||
-    navigator.msMaxTouchPoints > 0;
-
-  if (isTouchDevice) {
-    document.documentElement.classList.add("touch-device");
-    console.log("📱 Touch device detected - Performance mode enabled");
-
-    // Reduce animation duration for mobile
-    document.documentElement.style.setProperty("--animation-speed", "0.2s");
-  } else {
-    document.documentElement.classList.add("non-touch-device");
-    document.documentElement.style.setProperty("--animation-speed", "0.3s");
-  }
-})();
-
-// ===== TRIP DATA =====
+// ========================================
+// PART 1: TRIP DATA & INITIALIZATION
+// ========================================
 
 const tripData = [
   {
@@ -509,6 +491,64 @@ const tripData = [
       },
     ],
   },
+  // CONTINUES IN PART 2...
+];
+
+let currentDay = 1;
+let allActivities = [];
+let themeCheckInterval = null;
+
+const THEME_CONFIG = {
+  locations: {
+    margaretRiver: { lat: -33.95, lng: 115.08, name: "Margaret River" },
+    perth: { lat: -31.95, lng: 115.86, name: "Perth" },
+    singapore: { lat: 1.35, lng: 103.82, name: "Singapore" },
+  },
+  fallback: {
+    sunrise: 7 * 60 + 15,
+    sunset: 17 * 60 + 20,
+  },
+};
+
+// Touch device detection
+(function detectAndOptimize() {
+  const isTouchDevice =
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+
+  if (isTouchDevice) {
+    document.documentElement.classList.add("touch-device");
+    console.log("📱 Touch device detected - Performance mode enabled");
+    document.documentElement.style.setProperty("--animation-speed", "0.2s");
+  } else {
+    document.documentElement.classList.add("non-touch-device");
+    document.documentElement.style.setProperty("--animation-speed", "0.3s");
+  }
+})();
+
+function init() {
+  initThemeSystem();
+  createDayTabs();
+  showDay(1);
+  startCountdown();
+  setupSearch();
+  setupFAB();
+  setupCurrencyWidget();
+  setupTripInfo();
+  initMap();
+  checkDayFromURL();
+  updateNextActivityTimer();
+  optimizeTouchButtons();
+}
+
+// PART 1 ENDS HERE
+// ========================================
+// PART 2: REMAINING TRIP DATA (Days 7-11)
+// ========================================
+
+// Add to tripData array (continuing from Part 1)
+tripData.push(
   {
     day: 7,
     date: "02 JUL (THU)",
@@ -875,48 +915,12 @@ const tripData = [
         fact: "Don't forget to submit your SG Arrival Card within 3 days prior to landing.",
       },
     ],
-  },
-]; // <-- CLOSE the tripData array
+  }
+);
 
-// NOW continue with the rest of your script...
-// (All the Parts 1-6 that you already have)
-
-// ===== PART 1: INIT & THEME SYSTEM =====
-
-// Trip data defined elsewhere or imported
-
-let currentDay = 1;
-let allActivities = [];
-let themeCheckInterval = null;
-
-// THEME CONFIGURATION
-
-const THEME_CONFIG = {
-  locations: {
-    margaretRiver: { lat: -33.95, lng: 115.08, name: "Margaret River" },
-    perth: { lat: -31.95, lng: 115.86, name: "Perth" },
-    singapore: { lat: 1.35, lng: 103.82, name: "Singapore" },
-  },
-  fallback: {
-    sunrise: 7 * 60 + 15, // 7:15 AM in minutes since midnight
-    sunset: 17 * 60 + 20, // 5:20 PM
-  },
-};
-
-// --- Initialization ---
-
-function init() {
-  initThemeSystem();
-  createDayTabs();
-  showDay(1);
-  startCountdown();
-  setupSearch();
-  setupFAB();
-  setupCurrencyWidget();
-  setupTripInfo();
-}
-
-// --- Theme System Initialization ---
+// ========================================
+// THEME SYSTEM
+// ========================================
 
 function initThemeSystem() {
   loadTheme();
@@ -924,14 +928,10 @@ function initThemeSystem() {
   startAutoThemeChecker();
 }
 
-// --- Load Theme from localStorage or Default Auto ---
-
 function loadTheme() {
   const savedMode = localStorage.getItem("themeMode") || "auto";
   applyThemeMode(savedMode, true);
 }
-
-// --- Setup Theme Toggle Button to cycle modes ---
 
 function setupThemeToggle() {
   const themeToggle = document.getElementById("themeToggle");
@@ -947,15 +947,12 @@ function setupThemeToggle() {
     localStorage.setItem("themeMode", nextMode);
     applyThemeMode(nextMode);
 
-    // Simple animation feedback
     themeToggle.style.transform = "rotate(180deg) scale(0.9)";
     setTimeout(() => {
       themeToggle.style.transform = "";
     }, 300);
   });
 }
-
-// --- Apply Theme Mode ---
 
 function applyThemeMode(mode, isInitial = false) {
   const themeToggle = document.getElementById("themeToggle");
@@ -971,7 +968,6 @@ function applyThemeMode(mode, isInitial = false) {
       themeToggle.innerHTML =
         '<i class="fa-solid fa-moon"></i><span class="theme-mode-label">Dark</span>';
   } else {
-    // Auto Mode: calculate based on time/sunrise/sunset
     const shouldBeDark = isNightTime();
     document.documentElement.setAttribute(
       "data-theme",
@@ -988,21 +984,16 @@ function applyThemeMode(mode, isInitial = false) {
     }
   }
 }
-// ===== PART 2: THEME HELPERS & LOCATION DETECTION =====
-
-// --- Get Current Location based on trip dates ---
 
 function getCurrentLocation() {
   const now = new Date();
   const tripStart = new Date("2026-06-26");
   const tripEnd = new Date("2026-07-06");
 
-  // Before or after trip: Singapore
   if (now < tripStart || now > tripEnd) {
     return THEME_CONFIG.locations.singapore;
   }
 
-  // During trip: check which day
   const dayNum = Math.ceil((now - tripStart) / (1000 * 60 * 60 * 24));
 
   if (dayNum >= 1 && dayNum <= 5) {
@@ -1012,8 +1003,6 @@ function getCurrentLocation() {
   }
 }
 
-// --- Check if it's Night Time based on sunrise/sunset ---
-
 function isNightTime() {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -1021,8 +1010,6 @@ function isNightTime() {
   try {
     const location = getCurrentLocation();
     const times = calculateSunTimes(location.lat, location.lng, now);
-
-    // Night time if before sunrise or after sunset
     return currentMinutes < times.sunrise || currentMinutes > times.sunset;
   } catch (error) {
     console.warn("Sun calculation failed, using fallback times", error);
@@ -1033,30 +1020,17 @@ function isNightTime() {
   }
 }
 
-// --- Calculate Sunrise and Sunset times ---
-
 function calculateSunTimes(lat, lng, date) {
-  // Simplified sun calculation (accurate enough for theme switching)
-  // Based on: https://en.wikipedia.org/wiki/Sunrise_equation
-
   const dayOfYear = Math.floor(
     (date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
   );
   const latRad = (lat * Math.PI) / 180;
-
-  // Solar declination
   const declination =
     -23.44 * Math.cos(((360 / 365) * (dayOfYear + 10) * Math.PI) / 180);
   const declinationRad = (declination * Math.PI) / 180;
-
-  // Hour angle
   const hourAngle = Math.acos(-Math.tan(latRad) * Math.tan(declinationRad));
   const hourAngleDeg = (hourAngle * 180) / Math.PI;
-
-  // Solar noon (minutes from midnight)
   const solarNoon = 720 - 4 * lng - date.getTimezoneOffset();
-
-  // Sunrise and sunset (minutes from midnight)
   const sunrise = solarNoon - 4 * hourAngleDeg;
   const sunset = solarNoon + 4 * hourAngleDeg;
 
@@ -1066,20 +1040,15 @@ function calculateSunTimes(lat, lng, date) {
   };
 }
 
-// --- Auto Theme Checker (runs every minute) ---
-
 function startAutoThemeChecker() {
-  // Clear any existing interval
   if (themeCheckInterval) clearInterval(themeCheckInterval);
 
-  // Check every minute if in auto mode
   themeCheckInterval = setInterval(() => {
     const mode = localStorage.getItem("themeMode") || "auto";
     if (mode === "auto") {
       const shouldBeDark = isNightTime();
       const currentTheme = document.documentElement.getAttribute("data-theme");
 
-      // Only update if theme needs to change
       if (
         (shouldBeDark && currentTheme !== "dark") ||
         (!shouldBeDark && currentTheme !== "light")
@@ -1088,16 +1057,13 @@ function startAutoThemeChecker() {
         console.log("🌓 Auto theme switched:", shouldBeDark ? "dark" : "light");
       }
     }
-  }, 60000); // Check every minute
+  }, 60000);
 
-  // Also check immediately
   const mode = localStorage.getItem("themeMode") || "auto";
   if (mode === "auto") {
     applyThemeMode("auto", true);
   }
 }
-
-// --- Show Theme Notification Toast ---
 
 function showThemeNotification(message) {
   const toast = document.createElement("div");
@@ -1123,21 +1089,17 @@ function showThemeNotification(message) {
   toast.textContent = message;
   document.body.appendChild(toast);
 
-  // Animate in
   setTimeout(() => {
     toast.style.opacity = "1";
     toast.style.transform = "translateX(-50%) translateY(0)";
   }, 10);
 
-  // Animate out and remove
   setTimeout(() => {
     toast.style.opacity = "0";
     toast.style.transform = "translateX(-50%) translateY(-20px)";
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
-
-// --- Debug Info (accessible via console) ---
 
 window.getThemeDebugInfo = function () {
   const location = getCurrentLocation();
@@ -1162,9 +1124,11 @@ window.getThemeDebugInfo = function () {
     currentTheme: document.documentElement.getAttribute("data-theme"),
   };
 };
-// ===== PART 3: DAY NAVIGATION & ACTIVITY CARDS =====
 
-// --- Create Day Navigation Tabs ---
+// PART 2 ENDS HERE
+// ========================================
+// PART 3: DAY NAVIGATION, ACTIVITIES & SEARCH
+// ========================================
 
 function createDayTabs() {
   const tabsContainer = document.getElementById("dayTabs");
@@ -1186,10 +1150,7 @@ function createDayTabs() {
   });
 }
 
-// --- Show Specific Day Content ---
-
 function showDay(dayNum) {
-  // Update active tab
   const tabs = document.querySelectorAll(".tab");
   tabs.forEach(function (tab, index) {
     if (index + 1 === dayNum) {
@@ -1204,13 +1165,11 @@ function showDay(dayNum) {
     }
   });
 
-  // Get day data
   const dayData = tripData.find(function (d) {
     return d.day === dayNum;
   });
   if (!dayData) return;
 
-  // Update header info
   if (document.getElementById("currentDate"))
     document.getElementById("currentDate").textContent = dayData.date;
   if (document.getElementById("currentTitle"))
@@ -1221,7 +1180,6 @@ function showDay(dayNum) {
     document.getElementById("insightIcon").innerHTML =
       '<i class="fa-solid ' + dayData.icon + '"></i>';
 
-  // Render activities
   const timeline = document.getElementById("timeline");
   if (timeline) {
     timeline.innerHTML = "";
@@ -1246,19 +1204,15 @@ function showDay(dayNum) {
     });
   }
 
-  // Update weather and progress
   fetchWeather(dayNum);
   setTimeout(updateProgress, 100);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// --- Create Individual Activity Card ---
-
 function createActivityCard(activity, activityId) {
   const card = document.createElement("div");
   card.className = "activity";
 
-  // Determine tag label and class
   let tagLabel = "Activity";
   let tagClass = "tag-activity";
   if (activity.tag === "laundry") {
@@ -1274,7 +1228,6 @@ function createActivityCard(activity, activityId) {
 
   const isChecked = getCheckboxState(activityId);
 
-  // Build HTML
   let html =
     '<div class="activity-header"><div class="time">' +
     activity.time +
@@ -1296,7 +1249,6 @@ function createActivityCard(activity, activityId) {
       activity.duration +
       "</div>";
 
-  // Render tip or fact
   if (activity.tip) {
     html +=
       '<div class="inline-tip"><i class="fa-solid fa-lightbulb"></i> ' +
@@ -1310,7 +1262,6 @@ function createActivityCard(activity, activityId) {
       "</div>";
   }
 
-  // Add map and copy buttons if address exists
   if (activity.address) {
     const mapUrl =
       "https://www.google.com/maps/search/?api=1&query=" +
@@ -1329,7 +1280,6 @@ function createActivityCard(activity, activityId) {
 
   card.innerHTML = html;
 
-  // Attach checkbox listener
   const checkbox = card.querySelector(".activity-checkbox");
   if (checkbox) {
     checkbox.addEventListener("change", function () {
@@ -1340,7 +1290,6 @@ function createActivityCard(activity, activityId) {
     });
   }
 
-  // Apply checked state styling
   if (isChecked) {
     card.style.opacity = "0.6";
     card.style.textDecoration = "line-through";
@@ -1349,16 +1298,12 @@ function createActivityCard(activity, activityId) {
   return card;
 }
 
-// --- Escape HTML to prevent XSS ---
-
 function escapeHTML(str) {
   if (!str) return "";
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
 }
-
-// --- Handle Copy Address Button (Event Delegation) ---
 
 document.addEventListener("click", function (e) {
   if (
@@ -1386,8 +1331,6 @@ document.addEventListener("click", function (e) {
   }
 });
 
-// --- Checkbox State Management ---
-
 function saveCheckboxState(id, checked) {
   let savedStates = JSON.parse(
     localStorage.getItem("activityCheckboxes") || "{}"
@@ -1402,9 +1345,10 @@ function getCheckboxState(id) {
   );
   return savedStates[id] || false;
 }
-// ===== PART 4: SEARCH, COUNTDOWN & PROGRESS TRACKING =====
 
-// --- Countdown Timer to Trip Start ---
+// ========================================
+// COUNTDOWN, SEARCH & PROGRESS
+// ========================================
 
 function startCountdown() {
   const countdown = document.getElementById("countdown");
@@ -1426,10 +1370,8 @@ function startCountdown() {
       " until departure";
   }
   update();
-  setInterval(update, 60000); // Update every minute
+  setInterval(update, 60000);
 }
-
-// --- Search Functionality - Dropdown Results ---
 
 function setupSearch() {
   const searchBox = document.getElementById("searchBox");
@@ -1441,12 +1383,10 @@ function setupSearch() {
 
   let searchTimer;
 
-  // Search input handler
   searchBox.addEventListener("input", function (e) {
     clearTimeout(searchTimer);
     const query = e.target.value.trim();
 
-    // Show/hide clear button
     if (clearBtn) {
       clearBtn.style.display = query ? "block" : "none";
     }
@@ -1460,10 +1400,9 @@ function setupSearch() {
       }
 
       performSearch(query.toLowerCase());
-    }, 300); // Debounce 300ms
+    }, 300);
   });
 
-  // Clear button handler
   if (clearBtn) {
     clearBtn.addEventListener("click", function () {
       searchBox.value = "";
@@ -1475,22 +1414,18 @@ function setupSearch() {
     });
   }
 
-  // Close dropdown when clicking outside
   document.addEventListener("click", function (e) {
     if (!e.target.closest(".search-bar")) {
       searchResults.classList.remove("active");
     }
   });
 
-  // Reopen dropdown when clicking search box (if has results)
   searchBox.addEventListener("focus", function () {
     if (searchResults.innerHTML && searchBox.value.trim()) {
       searchResults.classList.add("active");
     }
   });
 }
-
-// --- Perform Search Across All Days ---
 
 function performSearch(query) {
   const searchResults = document.getElementById("searchResults");
@@ -1499,7 +1434,6 @@ function performSearch(query) {
 
   let matchingActivities = [];
 
-  // Search all days
   tripData.forEach(function (day) {
     day.activities.forEach(function (activity, actIndex) {
       const searchText = (
@@ -1523,7 +1457,6 @@ function performSearch(query) {
     });
   });
 
-  // Display results
   if (matchingActivities.length === 0) {
     searchInfo.textContent = "No results";
     searchResults.innerHTML =
@@ -1537,7 +1470,6 @@ function performSearch(query) {
       " result" +
       (matchingActivities.length !== 1 ? "s" : "");
 
-    // Build results HTML
     let resultsHTML = "";
     matchingActivities.forEach(function (match) {
       const highlightedDesc = escapeHTML(match.activity.desc).replace(
@@ -1571,7 +1503,6 @@ function performSearch(query) {
     searchResults.innerHTML = resultsHTML;
     searchResults.classList.add("active");
 
-    // Add click handlers to navigate to day
     searchResults
       .querySelectorAll(".search-result-item")
       .forEach(function (item) {
@@ -1580,76 +1511,15 @@ function performSearch(query) {
           currentDay = dayNum;
           showDay(dayNum);
           searchResults.classList.remove("active");
-
-          // Scroll to top smoothly
           window.scrollTo({ top: 0, behavior: "smooth" });
-
-          // Optional: Clear search after selection
-          // document.getElementById('searchBox').value = '';
-          // document.getElementById('searchInfo').textContent = '';
         });
       });
   }
 }
 
-// --- Render Search Results Grouped by Day ---
-
-function renderSearchResults(matches, escapedQuery) {
-  const timeline = document.getElementById("timeline");
-  if (!timeline) return;
-
-  timeline.innerHTML = "";
-  allActivities = [];
-
-  let currentDayInResults = null;
-
-  matches.forEach(function (match, index) {
-    // Add day header if it's a new day
-    if (currentDayInResults !== match.day) {
-      currentDayInResults = match.day;
-
-      const dayHeader = document.createElement("div");
-      dayHeader.className = "search-day-header";
-      dayHeader.innerHTML =
-        '<div style="display:flex; align-items:center; gap:1rem; margin:2rem 0 1rem; padding-bottom:0.75rem; border-bottom:2px solid var(--border);">' +
-        '<span style="font-size:0.85rem; font-weight:700; color:var(--accent-3); text-transform:uppercase; letter-spacing:0.1em;">Day ' +
-        match.day +
-        "</span>" +
-        '<span style="font-size:0.95rem; color:var(--text-secondary); font-weight:500;">' +
-        match.dayTitle +
-        "</span>" +
-        "</div>";
-      timeline.appendChild(dayHeader);
-    }
-
-    // Create activity card
-    const activityId = "search-day" + match.day + "-activity" + index;
-    const card = createActivityCard(match.activity, activityId);
-
-    // Highlight matching text
-    const desc = card.querySelector(".desc");
-    if (desc) {
-      desc.innerHTML = desc.innerHTML.replace(
-        new RegExp("(" + escapedQuery + ")", "gi"),
-        '<mark class="highlight">$1</mark>'
-      );
-    }
-
-    timeline.appendChild(card);
-    allActivities.push({
-      element: card,
-      text: "",
-    });
-  });
-}
-
-// --- Escape Regex Special Characters ---
-
 function escapeRegex(str) {
-  return str.replace(/[.*+?^\${}()|[\]\\]/g, "\\__CODE_0__");
+  return str.replace(/[.*+?^\${}()|[\]\\]/g, "\\__CODE_17__");
 }
-
-// --- Update Daily Progress Bar ---
 
 function updateProgress() {
   const checkboxes = document.querySelectorAll(".activity-checkbox");
@@ -1671,9 +1541,10 @@ function updateProgress() {
   progressText.textContent =
     percent + "% (" + checkedBoxes.length + "/" + checkboxes.length + ")";
 }
-// ===== PART 5: WEATHER WIDGET & CURRENCY CONVERTER =====
 
-// --- Fetch Weather Data (with fallback) ---
+// ========================================
+// WEATHER & CURRENCY
+// ========================================
 
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
@@ -1709,7 +1580,6 @@ async function fetchWeather(dayNum) {
     const rainChance =
       timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
 
-    // Weather icon mapping
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
     else if (code >= 1 && code <= 3) icon = "fa-cloud-sun";
@@ -1738,7 +1608,6 @@ async function fetchWeather(dayNum) {
     weatherDiv.innerHTML = html;
   } catch (error) {
     console.warn("Weather API unavailable, using estimates");
-    // Fallback mock data
     const mockTemp = isDownSouth ? 14 : 18;
     let html =
       '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;"><i class="fa-solid ' +
@@ -1758,8 +1627,6 @@ async function fetchWeather(dayNum) {
   }
 }
 
-// --- Setup Currency Widget ---
-
 function setupCurrencyWidget() {
   const widget = document.getElementById("currencyWidget");
   const toggle = document.getElementById("currencyToggle");
@@ -1774,7 +1641,6 @@ function setupCurrencyWidget() {
   let currentRate = 0;
   let isReversed = false;
 
-  // Toggle panel open/close
   toggle.addEventListener("click", function () {
     widget.classList.toggle("active");
     if (widget.classList.contains("active") && currentRate === 0) {
@@ -1782,28 +1648,24 @@ function setupCurrencyWidget() {
     }
   });
 
-  // Close button
   if (closeBtn) {
     closeBtn.addEventListener("click", function () {
       widget.classList.remove("active");
     });
   }
 
-  // Close when clicking outside
   document.addEventListener("click", function (e) {
     if (!widget.contains(e.target)) {
       widget.classList.remove("active");
     }
   });
 
-  // SGD input conversion
   sgdInput.addEventListener("input", function () {
     if (!isReversed) {
       audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
     }
   });
 
-  // Swap currencies button
   if (swapBtn) {
     swapBtn.addEventListener("click", function () {
       isReversed = !isReversed;
@@ -1841,7 +1703,6 @@ function setupCurrencyWidget() {
     );
   }
 
-  // Quick amount buttons
   quickBtns.forEach(function (btn) {
     btn.addEventListener("click", function () {
       const amount = this.getAttribute("data-amount");
@@ -1855,7 +1716,6 @@ function setupCurrencyWidget() {
     });
   });
 
-  // Fetch exchange rate from API
   function fetchExchangeRate() {
     const rateDisplay = document.getElementById("exchangeRate");
     const updatedDisplay = document.getElementById("lastUpdated");
@@ -1890,13 +1750,14 @@ function setupCurrencyWidget() {
       });
   }
 
-  // Initial fetch and auto-refresh every 5 minutes
   fetchExchangeRate();
   setInterval(fetchExchangeRate, 300000);
 }
-// ===== PART 6: FAB MENU, MODALS & TRIP INFO =====
 
-// --- Setup Floating Action Button (FAB) Menu ---
+// PART 3 ENDS HERE
+// ========================================
+// PART 4: FAB, MODALS, MAP & QUICK WINS
+// ========================================
 
 function setupFAB() {
   const fab = document.getElementById("fab");
@@ -1909,13 +1770,11 @@ function setupFAB() {
 
   if (!fab || !fabBtn) return;
 
-  // Toggle FAB menu
   fabBtn.addEventListener("click", function (e) {
     e.stopPropagation();
     fab.classList.toggle("active");
   });
 
-  // Jump to Today button
   if (jumpToday) {
     jumpToday.addEventListener("click", function () {
       const tripStart = new Date("2026-06-26");
@@ -1926,7 +1785,7 @@ function setupFAB() {
       if (daysDiff >= 1 && daysDiff <= 11) {
         currentDay = daysDiff;
         showDay(daysDiff);
-        createDayTabs(); // Refresh tabs to show active state
+        createDayTabs();
       } else {
         alert("Trip not active yet or already ended");
       }
@@ -1934,52 +1793,48 @@ function setupFAB() {
     });
   }
 
-  // Share button
   if (shareBtn) {
     shareBtn.addEventListener("click", function () {
+      const dayUrl =
+        window.location.origin +
+        window.location.pathname +
+        "?day=" +
+        currentDay;
+      const dayData = tripData.find((d) => d.day === currentDay);
+      const dayTitle = dayData ? dayData.title : "Day " + currentDay;
+
       if (navigator.share) {
         navigator
           .share({
-            title: "Perth Trip 2026",
-            text: "Check out our Perth itinerary!",
-            url: window.location.href,
+            title: "Perth Trip 2026 - " + dayTitle,
+            text: "Check out " + dayTitle + " of our Perth itinerary!",
+            url: dayUrl,
           })
-          .catch(function (error) {
-            console.log("Share cancelled or failed:", error);
-          });
+          .catch(function () {});
       } else {
-        // Fallback: Copy to clipboard
-        navigator.clipboard
-          .writeText(window.location.href)
-          .then(function () {
-            alert("Link copied to clipboard!");
-          })
-          .catch(function () {
-            alert("Unable to share. Copy this URL: " + window.location.href);
-          });
+        navigator.clipboard.writeText(dayUrl).then(function () {
+          alert("Day link copied! Share: " + dayUrl);
+        });
       }
       closeFAB();
     });
   }
 
-  // Emergency info button
   if (emergencyBtn && emergencyModal) {
     emergencyBtn.addEventListener("click", function () {
       emergencyModal.classList.add("active");
-      document.body.style.overflow = "hidden"; // Prevent body scroll
+      document.body.style.overflow = "hidden";
       closeFAB();
     });
   }
 
-  // Close emergency modal
   if (closeEmergency && emergencyModal) {
     closeEmergency.addEventListener("click", function () {
       emergencyModal.classList.remove("active");
-      document.body.style.overflow = ""; // Restore body scroll
+      document.body.style.overflow = "";
     });
   }
 
-  // Close modal on backdrop click
   if (emergencyModal) {
     emergencyModal.addEventListener("click", function (e) {
       if (e.target === emergencyModal) {
@@ -1989,14 +1844,12 @@ function setupFAB() {
     });
   }
 
-  // Close FAB when clicking outside
   document.addEventListener("click", function (e) {
     if (fab && !fab.contains(e.target)) {
       closeFAB();
     }
   });
 
-  // Close modal with ESC key
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       if (emergencyModal && emergencyModal.classList.contains("active")) {
@@ -2007,14 +1860,10 @@ function setupFAB() {
   });
 }
 
-// --- Close FAB Menu ---
-
 function closeFAB() {
   const fab = document.getElementById("fab");
   if (fab) fab.classList.remove("active");
 }
-
-// --- Setup Trip Info Modal ---
 
 function setupTripInfo() {
   const btn = document.getElementById("tripInfoBtn");
@@ -2023,13 +1872,11 @@ function setupTripInfo() {
 
   if (!btn || !modal) return;
 
-  // Open trip info modal
   btn.addEventListener("click", function () {
     modal.classList.add("active");
-    document.body.style.overflow = "hidden"; // Prevent body scroll
+    document.body.style.overflow = "hidden";
   });
 
-  // Close button
   if (closeBtn) {
     closeBtn.addEventListener("click", function () {
       modal.classList.remove("active");
@@ -2037,7 +1884,6 @@ function setupTripInfo() {
     });
   }
 
-  // Close on backdrop click
   modal.addEventListener("click", function (e) {
     if (e.target === modal) {
       modal.classList.remove("active");
@@ -2045,7 +1891,6 @@ function setupTripInfo() {
     }
   });
 
-  // Close with ESC key
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       if (modal.classList.contains("active")) {
@@ -2056,20 +1901,268 @@ function setupTripInfo() {
   });
 }
 
-// --- Initialize App on Page Load ---
+// ========================================
+// INTERACTIVE MAP
+// ========================================
 
-window.addEventListener("load", init);
-// ===== OPTIMIZED SCROLL DETECTION FOR TOUCH =====
+let map = null;
+let markers = [];
+let polyline = null;
+
+function initMap() {
+  const mapModal = document.getElementById("mapModal");
+  const mapDiv = document.getElementById("tripMap");
+  const closeBtn = document.getElementById("closeMap");
+
+  if (!mapModal || !mapDiv) return;
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      mapModal.classList.remove("active");
+      document.body.style.overflow = "";
+    });
+  }
+
+  mapModal.addEventListener("click", function (e) {
+    if (e.target === mapModal) {
+      mapModal.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && mapModal.classList.contains("active")) {
+      mapModal.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  });
+
+  window.openMap = function () {
+    mapModal.classList.add("active");
+    document.body.style.overflow = "hidden";
+
+    if (!map) {
+      createMap();
+    }
+  };
+
+  const filterBtns = document.querySelectorAll(".map-filter-btn");
+  filterBtns.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      filterBtns.forEach((b) => b.classList.remove("active"));
+      this.classList.add("active");
+      filterMapMarkers(this.dataset.filter);
+    });
+  });
+}
+
+function createMap() {
+  map = L.map("tripMap").setView([-32.5, 115.8], 8);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors",
+    maxZoom: 18,
+  }).addTo(map);
+
+  addAllMarkers();
+}
+
+function addAllMarkers() {
+  markers.forEach((m) => map.removeLayer(m));
+  markers = [];
+
+  if (polyline) map.removeLayer(polyline);
+
+  const allCoordinates = [];
+  const locationCache = {};
+
+  tripData.forEach(function (day) {
+    day.activities.forEach(function (activity) {
+      if (activity.address) {
+        if (!locationCache[activity.address]) {
+          const coords = getCoordinatesForAddress(activity.address);
+          if (coords) {
+            locationCache[activity.address] = coords;
+          }
+        }
+
+        const coords = locationCache[activity.address];
+        if (coords) {
+          allCoordinates.push(coords);
+
+          const iconColor = day.day <= 5 ? "#1e3a5f" : "#c5a880";
+
+          const markerHtml =
+            '<div style="background: ' +
+            iconColor +
+            '; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">' +
+            day.day +
+            "</div>";
+
+          const customIcon = L.divIcon({
+            className: "custom-map-marker",
+            html: markerHtml,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+          });
+
+          const mapUrl =
+            "https://www.google.com/maps/search/?api=1&query=" +
+            encodeURIComponent(activity.address);
+
+          const popupHtml =
+            '<div style="min-width: 200px;">' +
+            '<strong style="color: ' +
+            iconColor +
+            ';">Day ' +
+            day.day +
+            "</strong><br>" +
+            "<strong>" +
+            activity.time +
+            "</strong><br>" +
+            activity.desc +
+            "<br>" +
+            '<small style="color: #666;">' +
+            activity.address +
+            "</small><br>" +
+            '<a href="' +
+            mapUrl +
+            '" target="_blank" style="color: #1e3a5f; margin-top: 0.5rem; display: inline-block;">' +
+            '<i class="fa-solid fa-location-dot"></i> Navigate</a></div>';
+
+          const marker = L.marker(coords, { icon: customIcon })
+            .bindPopup(popupHtml)
+            .addTo(map);
+
+          marker.dayNum = day.day;
+          markers.push(marker);
+        }
+      }
+    });
+  });
+
+  if (allCoordinates.length > 1) {
+    polyline = L.polyline(allCoordinates, {
+      color: "#1e3a5f",
+      weight: 3,
+      opacity: 0.6,
+      dashArray: "10, 5",
+    }).addTo(map);
+  }
+
+  if (allCoordinates.length > 0) {
+    const bounds = L.latLngBounds(allCoordinates);
+    map.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+
+function filterMapMarkers(filter) {
+  markers.forEach(function (marker) {
+    if (filter === "all") {
+      marker.addTo(map);
+    } else if (filter === "1-5" && marker.dayNum >= 1 && marker.dayNum <= 5) {
+      marker.addTo(map);
+    } else if (filter === "6-11" && marker.dayNum >= 6 && marker.dayNum <= 11) {
+      marker.addTo(map);
+    } else {
+      map.removeLayer(marker);
+    }
+  });
+
+  const visibleMarkers = markers.filter((m) => map.hasLayer(m));
+  if (visibleMarkers.length > 0) {
+    const bounds = L.latLngBounds(visibleMarkers.map((m) => m.getLatLng()));
+    map.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+
+function getCoordinatesForAddress(address) {
+  const coordinates = {
+    "Cockburn Gateway, 816 Beeliar Dr, Success WA 6164": [-32.1255, 115.8481],
+    "Cockburn Gateway, Success WA 6164": [-32.1255, 115.8481],
+    "Apartment #4, 16 Town View Terrace, Margaret River WA 6285": [
+      -33.9539, 115.0764,
+    ],
+    "Lot 272 Bussell Hwy, Margaret River WA 6285": [-33.9539, 115.0764],
+    "Leeuwin Rd, Augusta WA 6290": [-34.3744, 115.135],
+    "Jewel Caves Rd, Deepdene WA 6290": [-34.05, 115.0],
+    "49 Town View Terrace, Margaret River WA 6285": [-33.9539, 115.0764],
+    "78 Bussell Hwy, Margaret River WA 6285": [-33.9539, 115.0764],
+    "85 Bussell Hwy, Margaret River WA 6285": [-33.9539, 115.0764],
+    "Augusta Margaret River Catholic Parish": [-33.9539, 115.0764],
+    "10418 Bussell Hwy, Witchcliffe WA 6286": [-34.0278, 115.1002],
+    "19 Bussell Hwy, Witchcliffe WA 6286": [-34.0278, 115.1002],
+    "10399 Bussell Hwy, Witchcliffe WA 6286": [-34.0278, 115.1002],
+    "3 Redgate Rd, Witchcliffe WA 6286": [-34.0278, 115.1002],
+    "Caves Rd, Forest Grove WA 6286": [-33.98, 115.04],
+    "7087 Caves Rd, Margaret River WA 6286": [-33.92, 115.06],
+    "Hooked Up, Surfers Point Rd, Prevelly WA 6285": [-33.97, 115.0],
+    "4 Bottrill St, Cowaramup WA 6284": [-33.8444, 115.0786],
+    "219 Harmans Mill Rd, Metricup WA 6280": [-33.75, 115.1],
+    "1301 Wildwood Rd, Yallingup WA 6282": [-33.65, 115.03],
+    "6 Eyre St, Dunsborough WA 6281": [-33.6144, 115.1044],
+    "2 Canal Rocks Rd, Yallingup WA 6282": [-33.63, 115.02],
+    "110 Bussell Hwy, Margaret River WA 6285": [-33.9539, 115.0764],
+    "35 Bussell Hwy, Cowaramup WA 6284": [-33.8444, 115.0786],
+    "69 Bussell Hwy, Cowaramup WA 6284": [-33.8444, 115.0786],
+    "455 N Jindong Rd, North Jindong WA 6280": [-33.78, 115.12],
+    "86 West St, Busselton WA 6280": [-33.6544, 115.3464],
+    "17 Foreshore Parade, Busselton WA 6280": [-33.6544, 115.3464],
+    "38/44 Albert St, Busselton WA 6280": [-33.6544, 115.3464],
+    "59-65 Kent St, Busselton WA 6280": [-33.6544, 115.3464],
+    "24 Albert St, Busselton WA 6280": [-33.6544, 115.3464],
+    "2 Andrews Way, Margaret River WA 6285": [-33.9539, 115.0764],
+    "7 Prince Philip Dr, South Bunbury WA 6230": [-33.3392, 115.6378],
+    "Shop 6/33 Clifton St, Bunbury WA 6230": [-33.3272, 115.6378],
+    "11442 S Western Hwy, Wokalup WA 6221": [-33.15, 115.85],
+    "Unit 1/5742 S Western Hwy, Pinjarra WA 6208": [-32.63, 115.87],
+    "15B Esperance St, East Victoria Park WA 6101": [-31.9822, 115.8986],
+    "256 Mill Point Rd, South Perth WA 6151": [-31.99, 115.86],
+    "Orlov Trail, Cathedral Ave, Brigadoon WA 6069": [-31.75, 116.15],
+    "10250 W Swan Rd, Henley Brook WA 6055": [-31.81, 115.97],
+    "George Rd, Middle Swan WA 6056": [-31.85, 115.99],
+    "209 Toodyay Rd, Middle Swan WA 6056": [-31.85, 115.99],
+    "22-24 Clayton St, Bellevue WA 6056": [-31.895, 116.015],
+    "189 James St, Guildford WA 6055": [-31.9, 115.97],
+    "10 High St, Perth Airport WA 6105": [-31.94, 115.97],
+    "142 Dunreath Dr, Perth Airport WA 6105": [-31.94, 115.97],
+    "610 Albany Hwy, Victoria Park WA 6100": [-31.9822, 115.8986],
+    "Fremantle Markets, 71 Parry St, Fremantle WA 6160": [-32.0569, 115.75],
+    "South Terrace & Henderson St, Fremantle WA 6160": [-32.0569, 115.75],
+    "22 Adelaide St, Fremantle WA 6160": [-32.0569, 115.75],
+    "South Terrace Corner, Collie St, Fremantle WA 6160": [-32.0569, 115.75],
+    "61 High St, Fremantle WA 6160": [-32.0569, 115.75],
+    "19 High St, Fremantle WA 6160": [-32.0569, 115.75],
+    "40 Mews Rd, Fremantle WA 6160": [-32.055, 115.76],
+    "2/1140 Albany Hwy, Bentley WA 6102": [-32.005, 115.92],
+    "271 Bagot Rd, Subiaco WA 6008": [-31.9469, 115.8236],
+    "120 Trichet Rd, Wanneroo WA 6065": [-31.75, 115.8],
+    "Shop 16/12 Harrison St, Balcatta WA 6021": [-31.87, 115.83],
+    "200 Karrinyup Rd, Karrinyup WA 6018": [-31.875, 115.775],
+    "5 Ingham Ct, Willetton WA 6155": [-32.05, 115.89],
+    "Bruce Lee Oval, 5 Caesar St, Beaconsfield WA 6162": [-32.07, 115.77],
+    "266 South Terrace, South Fremantle WA 6162": [-32.065, 115.755],
+    "Dog Beach, Fremantle WA 6162": [-32.05, 115.75],
+    "1128 Albany Hwy, Bentley WA 6102": [-32.005, 115.92],
+    "848 Albany Hwy, East Victoria Park WA 6101": [-31.99, 115.9],
+    "55 George St, Kensington WA 6151": [-31.98, 115.88],
+    "Perth Airport Terminal 1, Horrie Miller Dr": [-31.94, 115.97],
+  };
+
+  return coordinates[address] || null;
+}
+
+// ========================================
+// SCROLL OPTIMIZATION & QUICK WINS
+// ========================================
 
 let lastScrollTop = 0;
 let ticking = false;
-let scrollThrottle;
 
 function updateScrollState() {
   const currentScroll =
     window.pageYOffset || document.documentElement.scrollTop;
 
-  // Increased threshold for touch to prevent accidental triggers
   if (currentScroll <= 80) {
     document.body.classList.add("at-top");
     document.body.classList.remove("scrolling-down", "scrolling-up");
@@ -2089,41 +2182,16 @@ window.addEventListener(
   "scroll",
   function () {
     if (!ticking) {
-      // Use RAF for smooth 60fps updates
       window.requestAnimationFrame(updateScrollState);
       ticking = true;
     }
   },
   { passive: true }
-); // Passive listener for better scroll performance
+);
 
 document.body.classList.add("at-top");
 
-// ===== SCROLL TO TOP BUTTON =====
-
-(function setupScrollToTop() {
-  const scrollBtn = document.getElementById("scrollToTop");
-  if (!scrollBtn) return;
-
-  // Show/hide button based on scroll position
-  window.addEventListener("scroll", function () {
-    if (window.pageYOffset > 500) {
-      scrollBtn.classList.add("visible");
-    } else {
-      scrollBtn.classList.remove("visible");
-    }
-  });
-
-  // Smooth scroll to top when clicked
-  scrollBtn.addEventListener("click", function () {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  });
-})();
-// ===== SCROLL TO TOP BUTTON =====
-
+// Scroll to top button
 (function setupScrollToTop() {
   const scrollBtn = document.getElementById("scrollToTop");
   if (!scrollBtn) return;
@@ -2144,8 +2212,7 @@ document.body.classList.add("at-top");
   });
 })();
 
-// ===== PWA INSTALL PROMPT =====
-
+// PWA Install Prompt
 let deferredPrompt;
 
 window.addEventListener("beforeinstallprompt", function (e) {
@@ -2182,12 +2249,166 @@ window.addEventListener("beforeinstallprompt", function (e) {
     });
   }
 });
-// ===== TOUCH-OPTIMIZED BUTTON FEEDBACK =====
 
-(function optimizeTouchButtons() {
+window.addEventListener("appinstalled", function () {
+  console.log("🎉 Perth Trip 2026 installed successfully!");
+});
+
+// Keyboard shortcuts
+document.addEventListener("keydown", function (e) {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
+    return;
+  }
+
+  switch (e.key) {
+    case "ArrowLeft":
+      e.preventDefault();
+      if (currentDay > 1) {
+        currentDay--;
+        showDay(currentDay);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      break;
+
+    case "ArrowRight":
+      e.preventDefault();
+      if (currentDay < tripData.length) {
+        currentDay++;
+        showDay(currentDay);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      break;
+
+    case "Home":
+      e.preventDefault();
+      currentDay = 1;
+      showDay(1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      break;
+
+    case "End":
+      e.preventDefault();
+      currentDay = tripData.length;
+      showDay(tripData.length);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      break;
+
+    case "/":
+      e.preventDefault();
+      document.getElementById("searchBox")?.focus();
+      break;
+
+    case "t":
+      e.preventDefault();
+      document.getElementById("themeToggle")?.click();
+      break;
+
+    case "m":
+      e.preventDefault();
+      if (typeof openMap === "function") openMap();
+      break;
+  }
+});
+
+console.log(`
+⌨️  KEYBOARD SHORTCUTS:
+← → Arrow keys: Previous/Next day
+Home: Jump to Day 1
+End: Jump to last day
+/: Focus search
+t: Toggle theme
+m: Open map
+`);
+
+// Check URL for day parameter
+function checkDayFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const dayParam = urlParams.get("day");
+
+  if (dayParam) {
+    const dayNum = parseInt(dayParam);
+    if (dayNum >= 1 && dayNum <= tripData.length) {
+      currentDay = dayNum;
+      showDay(dayNum);
+    }
+  }
+}
+
+// Next activity timer
+function updateNextActivityTimer() {
+  const timerDiv = document.getElementById("nextActivityTimer");
+  if (!timerDiv) return;
+
+  const now = new Date();
+  const tripStart = new Date("2026-06-26");
+  const tripEnd = new Date("2026-07-06");
+
+  if (now < tripStart || now > tripEnd) {
+    timerDiv.classList.remove("visible");
+    return;
+  }
+
+  const daysDiff = Math.ceil((now - tripStart) / (1000 * 60 * 60 * 24));
+  if (daysDiff < 1 || daysDiff > tripData.length) {
+    timerDiv.classList.remove("visible");
+    return;
+  }
+
+  const todayData = tripData[daysDiff - 1];
+  if (!todayData) {
+    timerDiv.classList.remove("visible");
+    return;
+  }
+
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+  let nextActivity = null;
+
+  for (let activity of todayData.activities) {
+    const [hours, minutes] = activity.time.split(":").map(Number);
+    const activityTime = hours * 60 + minutes;
+
+    if (activityTime > currentTime) {
+      nextActivity = activity;
+      break;
+    }
+  }
+
+  if (!nextActivity) {
+    timerDiv.innerHTML =
+      '<i class="fa-solid fa-check-circle"></i> All activities complete!';
+    timerDiv.classList.add("visible");
+    return;
+  }
+
+  const [hours, minutes] = nextActivity.time.split(":").map(Number);
+  const activityTime = hours * 60 + minutes;
+  const minutesUntil = activityTime - currentTime;
+  const hoursUntil = Math.floor(minutesUntil / 60);
+  const minsUntil = minutesUntil % 60;
+
+  let timeText = "";
+  if (hoursUntil > 0) {
+    timeText = hoursUntil + "h " + minsUntil + "m";
+  } else {
+    timeText = minsUntil + " mins";
+  }
+
+  timerDiv.innerHTML =
+    '<i class="fa-solid fa-clock"></i> Next: ' +
+    nextActivity.desc.substring(0, 25) +
+    (nextActivity.desc.length > 25 ? "..." : "") +
+    " in " +
+    timeText;
+
+  timerDiv.classList.add("visible");
+}
+
+setInterval(updateNextActivityTimer, 60000);
+
+// Touch button optimization
+function optimizeTouchButtons() {
   if (!document.documentElement.classList.contains("touch-device")) return;
 
-  // Add instant visual feedback to all clickable elements
   const touchTargets = document.querySelectorAll(
     "button, .tab, .map-link, .activity, .search-result-item"
   );
@@ -2217,11 +2438,12 @@ window.addEventListener("beforeinstallprompt", function (e) {
       { passive: true }
     );
   });
-})();
+}
 
-// Run after DOM loads
-window.addEventListener("load", optimizeTouchButtons);
+// ========================================
+// INITIALIZE APP
+// ========================================
 
-window.addEventListener("appinstalled", function () {
-  console.log("🎉 Perth Trip 2026 installed successfully!");
-});
+window.addEventListener("load", init);
+
+// END OF SCRIPT.JS
