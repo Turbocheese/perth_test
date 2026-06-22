@@ -1035,10 +1035,27 @@ function createActivityCard(activity, activityId) {
     const mapUrl =
       "https://www.google.com/maps/search/?api=1&query=" +
       encodeURIComponent(activity.address);
+    const safeAddress = activity.address.replace(/'/g, "\\'"); // Prevents crashes if address has an apostrophe
+
+    html += '<div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">';
+
+    // Map Button
     html +=
       '<a href="' +
       mapUrl +
-      '" target="_blank" rel="noopener" class="map-link"><i class="fa-solid fa-location-dot"></i> Open Map</a>';
+      '" target="_blank" rel="noopener" class="map-link">';
+    html += '<i class="fa-solid fa-location-dot"></i> Open Map</a>';
+
+    // Copy Button (Uses map-link styling but with different colors)
+    html +=
+      "<button onclick=\"copyAddress('" +
+      safeAddress +
+      '\', this)" class="map-link" ';
+    html +=
+      'style="background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); cursor: pointer;">';
+    html += '<i class="fa-regular fa-copy"></i> Copy</button>';
+
+    html += "</div>";
   }
 
   card.innerHTML = html;
@@ -1331,33 +1348,48 @@ function setupCurrencyWidget() {
   setInterval(fetchExchangeRate, 300000);
 }
 
-// NEW FUNCTION: Live Weather (Fixed URL with Timezone)
+// ENHANCED FUNCTION: Live Weather with CURRENT Hour Rain Chance
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
   if (!weatherDiv) return;
+
+  weatherDiv.style.flexDirection = "column";
+  weatherDiv.style.alignItems = "flex-start";
+  weatherDiv.style.gap = "0.25rem";
+
   weatherDiv.innerHTML =
-    '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+    '<div style="display:flex; gap:0.5rem; align-items:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching weather...</div>';
 
   const isDownSouth = dayNum <= 5;
-  // Simplified the coordinates slightly for better API matching
   const lat = isDownSouth ? -33.95 : -31.95;
   const lon = isDownSouth ? 115.08 : 115.86;
   const locationName = isDownSouth ? "Margaret River" : "Perth";
 
   try {
-    // FIX: Added &timezone=auto which Open-Meteo requires!
-    const url = `[https://api.open-meteo.com/v1/forecast?latitude=](https://api.open-meteo.com/v1/forecast?latitude=)\${lat}&longitude=\${lon}&current_weather=true&timezone=Australia%2FPerth`;
+    // We now fetch 'hourly=precipitation_probability' and ask for 2 days of data just to be safe around midnight
+    const url =
+      "https://api.open-meteo.com/v1/forecast?latitude=" +
+      lat +
+      "&longitude=" +
+      lon +
+      "&current=temperature_2m,weather_code,apparent_temperature,wind_speed_10m&hourly=precipitation_probability&timezone=Australia%2FPerth&forecast_days=2";
 
     const response = await fetch(url);
-
-    if (!response.ok) {
-      const serverError = await response.text();
-      throw new Error("Server rejected request: " + serverError);
-    }
+    if (!response.ok) throw new Error("API Blocked");
 
     const data = await response.json();
-    const temp = Math.round(data.current_weather.temperature);
-    const code = data.current_weather.weathercode;
+
+    // Parse current conditions
+    const temp = Math.round(data.current.temperature_2m);
+    const code = data.current.weather_code;
+    const feelsLike = Math.round(data.current.apparent_temperature);
+    const wind = Math.round(data.current.wind_speed_10m);
+
+    // Find the exact current hour in the hourly array to get the live rain chance
+    const currentTimeString = data.current.time;
+    const timeIndex = data.hourly.time.indexOf(currentTimeString);
+    const rainChance =
+      timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
 
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
@@ -1366,11 +1398,45 @@ async function fetchWeather(dayNum) {
     else if (code >= 51 && code <= 67) icon = "fa-cloud-rain";
     else if (code >= 71) icon = "fa-snowflake";
 
-    weatherDiv.innerHTML = `<i class="fa-solid \${icon}"></i> \${temp}°C in \${locationName}`;
+    // Build the 2-line badge with neat icons
+    let html =
+      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;">';
+    html +=
+      '<i class="fa-solid ' + icon + '"></i> ' + temp + "°C in " + locationName;
+    html += "</div>";
+
+    html +=
+      '<div style="display:flex; align-items:center; gap:0.6rem; font-size:0.75rem; font-weight:600; opacity:0.75; letter-spacing:0.02em;">';
+    html += "<span>Feels " + feelsLike + "°C</span>•";
+    html += '<span><i class="fa-solid fa-wind"></i> ' + wind + " km/h</span>•";
+    html +=
+      '<span><i class="fa-solid fa-umbrella"></i> ' + rainChance + "%</span>";
+    html += "</div>";
+
+    weatherDiv.innerHTML = html;
   } catch (error) {
-    console.error("Detailed Weather Error:", error);
-    const fallbackTemp = isDownSouth ? "15" : "18";
-    weatherDiv.innerHTML = `<i class="fa-solid fa-cloud-sun"></i> ~\${fallbackTemp}°C (Winter Avg)`;
+    const mockTemp = isDownSouth ? 14 : 18;
+    const mockIcon = isDownSouth ? "fa-cloud-sun" : "fa-sun";
+
+    let html =
+      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;">';
+    html +=
+      '<i class="fa-solid ' +
+      mockIcon +
+      '"></i> ~' +
+      mockTemp +
+      "°C in " +
+      locationName;
+    html += "</div>";
+
+    html +=
+      '<div style="display:flex; align-items:center; gap:0.6rem; font-size:0.75rem; font-weight:600; opacity:0.75; letter-spacing:0.02em;">';
+    html += "<span>Feels ~" + (mockTemp - 2) + "°C</span>•";
+    html += '<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•';
+    html += '<span><i class="fa-solid fa-umbrella"></i> 0%</span>';
+    html += "</div>";
+
+    weatherDiv.innerHTML = html;
   }
 }
 
@@ -1394,5 +1460,23 @@ function updateProgress() {
   progressText.textContent =
     percent + "% (" + checkedBoxes.length + "/" + checkboxes.length + ")";
 }
+// NEW FUNCTION: Copy Address to Clipboard
+window.copyAddress = function (text, btn) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+      btn.style.color = "var(--accent-2)";
+      btn.style.borderColor = "var(--accent-2)";
+
+      // Change back after 2 seconds
+      setTimeout(function () {
+        btn.innerHTML = originalHTML;
+        btn.style.color = "var(--text-primary)";
+        btn.style.borderColor = "var(--border)";
+      }, 2000);
+    });
+  }
+};
 
 window.addEventListener("load", init);
