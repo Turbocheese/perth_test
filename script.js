@@ -1361,7 +1361,9 @@ async function fetchWeather(dayNum) {
 
     weatherDiv.innerHTML = `<i class="fa-solid \${icon}"></i> \${temp}°C in \${locationName}`;
   } catch (error) {
-    // If the browser blocks the API, show the historical Winter Average instead of an error!
+    console.error("Weather API Error:", error); // Helps debugging!
+
+    // If GitHub, Brave Browser, or an AdBlocker blocks the API, show the historical Winter Average!
     const fallbackTemp = isDownSouth ? "15" : "18";
     weatherDiv.innerHTML = `<i class="fa-solid fa-cloud-sun"></i> ~\${fallbackTemp}°C (Winter Avg)`;
   }
