@@ -7,8 +7,24 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Perth Trip 2026</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Perth 2026" />
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn-icons-png.flaticon.com/512/2353/2353341.png"
+    />
+    <meta name="theme-color" content="#1e3a5f" />
+
     <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
     <header>
@@ -42,7 +58,6 @@
       <div class="day-tabs" id="dayTabs"></div>
     </div>
 
-    <!-- THIS IS THE CONTAINER THAT FIXES YOUR SPACING! -->
     <div class="container">
       <div class="day-header">
         <div class="date" id="currentDate"></div>
@@ -74,60 +89,14 @@
       </div>
 
       <div class="timeline" id="timeline"></div>
-
-      <div class="info-section">
-        <h3>Trip Info</h3>
-        <div class="info-grid">
-          <div class="info-card">
-            <h4>Car Rental</h4>
-            <p>
-              <strong>H20 Car Rentals</strong><br />Kia Carnival<br />Booking:
-              #3761<br />Steven Yii: +61 490 438035
-            </p>
-          </div>
-          <div class="info-card">
-            <h4>Flights</h4>
-            <p>
-              Scoot TR8 (SIN→PER)<br />Scoot TR17 (PER→SIN)<br />Booking: BYLSMW
-              & GB3MMW
-            </p>
-          </div>
-          <div class="info-card">
-            <h4>Baggage</h4>
-            <p>Outbound: 20kg each<br />Return: Nic/Russ/Ryan 25kg, Sue 30kg</p>
-          </div>
-          <div class="info-card highlight-card">
-            <h4><i class="fa-solid fa-cloud-moon"></i> Winter Profile</h4>
-            <p>
-              <strong>Temps:</strong> 8°C - 18°C<br /><strong>Sunrise:</strong>
-              ~7:15 AM<br /><strong>Sunset:</strong> ~5:20 PM<br /><em
-                >Tip: Coastal winds are chilly. Dress in layers!</em
-              >
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- END OF CONTAINER -->
-
-    <div class="fab" id="fab">
-      <button class="fab-btn" id="fabBtn">
-        <i class="fa-solid fa-ellipsis"></i>
-      </button>
-      <div class="fab-menu">
-        <button class="fab-option" id="jumpToday">
-          <i class="fa-solid fa-calendar-day"></i> Go to Today
-        </button>
-        <button class="fab-option" id="shareBtn">
-          <i class="fa-solid fa-share-nodes"></i> Share
-        </button>
-      </div>
     </div>
 
     <div class="currency-widget" id="currencyWidget">
       <button class="currency-toggle" id="currencyToggle">
-        <i class="fa-solid fa-dollar-sign"></i><span>SGD/AUD</span>
+        <i class="fa-solid fa-dollar-sign"></i>
+        <span>SGD/AUD</span>
       </button>
+
       <div class="currency-panel" id="currencyPanel">
         <div class="currency-header">
           <h3>Currency Exchange</h3>
@@ -135,6 +104,7 @@
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
+
         <div class="exchange-rate">
           <div class="rate-display">
             <div class="rate-label">Live Rate</div>
@@ -142,6 +112,7 @@
             <div class="rate-updated" id="lastUpdated">Fetching rates...</div>
           </div>
         </div>
+
         <div class="converter">
           <div class="converter-row">
             <div class="currency-input-group">
@@ -153,15 +124,18 @@
                 value="100"
               />
             </div>
+
             <button class="swap-btn" id="swapBtn">
               <i class="fa-solid fa-arrow-right-arrow-left"></i>
             </button>
+
             <div class="currency-input-group">
               <label>Australian Dollar (AUD)</label>
               <input type="number" id="audInput" placeholder="0.00" readonly />
             </div>
           </div>
         </div>
+
         <div class="quick-amounts">
           <div class="quick-title">Quick Convert</div>
           <div class="quick-grid">
@@ -174,6 +148,138 @@
       </div>
     </div>
 
-    <script src="script.js?v=999"></script>
+    <div class="trip-info-widget">
+      <button class="trip-info-toggle" id="tripInfoBtn">
+        <i class="fa-solid fa-suitcase-rolling"></i>
+        <span class="hide-mobile"> Trip Info</span>
+      </button>
+    </div>
+
+    <div class="fab" id="fab">
+      <button class="fab-btn" id="fabBtn" aria-label="Open menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="fab-menu">
+        <button class="fab-option" id="jumpToday">
+          <i class="fa-solid fa-calendar-day"></i> Go to Today
+        </button>
+        <button class="fab-option" id="shareBtn">
+          <i class="fa-solid fa-share-nodes"></i> Share
+        </button>
+        <button class="fab-option" id="emergencyBtn" style="color: #e53e3e">
+          <i class="fa-solid fa-triangle-exclamation"></i> Emergency Info
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="tripInfoModal">
+      <div class="modal-content info-modal-content">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-suitcase-rolling"></i> Trip Info</h3>
+          <button class="close-modal" id="closeTripInfo">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="info-grid">
+            <div class="info-card">
+              <h4>Car Rental</h4>
+              <p>
+                <strong>H20 Car Rentals</strong><br />
+                Kia Carnival<br />
+                Booking: #3761<br />
+                Steven Yii: +61 490 438035
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>Flights</h4>
+              <p>
+                Scoot TR8 (SIN→PER)<br />
+                Scoot TR17 (PER→SIN)<br />
+                Booking: BYLSMW &amp; GB3MMW<br /><br />
+                <strong>Outbound seats:</strong> 17A, 17B, 17C / 18B, 18C<br />
+                <strong>Inbound seats:</strong> 17K, 17J, 17H / 18J, 18H
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>Baggage</h4>
+              <p>
+                Outbound: 20kg each<br />
+                Return: Nic/Russ/Ryan 25kg, Sue 30kg
+              </p>
+            </div>
+
+            <div class="info-card">
+              <h4>Insurance</h4>
+              <p>
+                <strong>Singlife</strong><br />
+                Policy: 60318431<br />
+                <a href="tel:+6564609391">+65 6460-9391</a>
+              </p>
+            </div>
+
+            <div class="info-card highlight-card">
+              <h4><i class="fa-solid fa-cloud-moon"></i> Winter Profile</h4>
+              <p>
+                <strong>Temps:</strong> 8°C - 18°C<br />
+                <strong>Sunrise:</strong> ~7:15 AM<br />
+                <strong>Sunset:</strong> ~5:20 PM<br />
+                <em>Tip: Coastal winds are chilly. Dress in layers!</em>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="emergencyModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-truck-medical"></i> Emergency Contacts</h3>
+          <button class="close-modal" id="closeEmergency">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="emergency-item">
+            <strong
+              ><i class="fa-solid fa-phone"></i> AU Emergency
+              (Police/Fire/Ambulance)</strong
+            >
+            <a href="tel:000">000</a>
+          </div>
+
+          <div class="emergency-item">
+            <strong
+              ><i class="fa-solid fa-car-burst"></i> H20 Car Rentals
+              Breakdown</strong
+            >
+            <a href="tel:+61490438035">+61 490 438035</a>
+          </div>
+
+          <div class="emergency-item">
+            <strong
+              ><i class="fa-solid fa-passport"></i> SG High Commission
+              (Canberra)</strong
+            >
+            <a href="tel:+61262703000">+61 2 6270 3000</a>
+          </div>
+
+          <div class="emergency-item">
+            <strong
+              ><i class="fa-solid fa-file-shield"></i> Travel Insurance</strong
+            >
+            <span>Singlife · Policy 60318431</span><br />
+            <a href="tel:+6564609391">+65 6460-9391</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js?v=12"></script>
   </body>
 </html>

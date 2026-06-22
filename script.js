@@ -25,7 +25,7 @@ const tripData = [
         desc: "Flight TR8 departs Singapore",
         tag: "activity",
         duration: "5h 10m",
-        tip: "5-hour flight. Perfect time to download offline Google Maps for Western Australia.",
+        fact: "Google Maps allows you to download entire regions for offline use while you have Wi-Fi.",
       },
       {
         time: "17:10",
@@ -46,7 +46,7 @@ const tripData = [
         desc: "Start drive to Margaret River",
         tag: "activity",
         duration: "26 mins",
-        tip: "Take turns resting. The driver should stay highly alert for wildlife at this hour.",
+        fact: "Kangaroos are drawn to headlights and are most active at dusk. The driver must stay highly alert!",
       },
       {
         time: "19:11",
@@ -70,7 +70,6 @@ const tripData = [
         address: "Apartment #4, 16 Town View Terrace, Margaret River WA 6285",
         tag: "activity",
         duration: "2h 40m",
-        tip: "Highways are dark. Kangaroos are drawn to headlights, so don't speed!",
       },
     ],
   },
@@ -103,7 +102,7 @@ const tripData = [
         address: "Jewel Caves Rd, Deepdene WA 6290",
         tag: "activity",
         duration: "1 hour",
-        tip: "Guided tours only. It stays a constant 17°C inside, which might actually feel warm compared to outside!",
+        fact: "It features one of the longest straw stalactites found in any tourist cave in the world.",
       },
       {
         time: "15:50",
@@ -136,7 +135,7 @@ const tripData = [
       },
       {
         time: "19:15",
-        desc: "Dinner at Swings & Roundabouts (Table for 5)",
+        desc: "Dinner at Swings & Roundabouts",
         address: "85 Bussell Hwy, Margaret River WA 6285",
         tag: "booking",
         duration: "1.5 hours",
@@ -154,8 +153,7 @@ const tripData = [
       {
         time: "09:30",
         desc: "Leave for Sunday Mass",
-        address:
-          "Augusta Margaret River Catholic Parish, Corner Wallcliffe Rd & Farrelly St",
+        address: "Augusta Margaret River Catholic Parish",
         tag: "activity",
         duration: "1 hour",
         tip: "Arrive 10-15 mins early to find comfortable parking.",
@@ -178,7 +176,7 @@ const tripData = [
       },
       {
         time: "12:45",
-        desc: "Vintage shopping: Beanhead Records, LucyKat, Poolroom Vintage, The Tiny Store, Flying Wardrobe, Lime Beach",
+        desc: "Vintage shopping: Beanhead Records, LucyKat, Poolroom",
         address: "10399 Bussell Hwy, Witchcliffe WA 6286",
         tag: "activity",
         duration: "1h 45m",
@@ -198,7 +196,7 @@ const tripData = [
         address: "Caves Rd, Forest Grove WA 6286",
         tag: "activity",
         duration: "1.5 hours",
-        tip: "This is an audio-guided tour, allowing you to go completely at your own pace.",
+        fact: "Contains fossils of giant extinct marsupials (megafauna) dating back 50,000 years.",
       },
       {
         time: "16:30",
@@ -248,7 +246,7 @@ const tripData = [
       },
       {
         time: "10:40",
-        desc: "Gabriel Chocolate, Margaret River Chocolate Factory, Wulura Olive Oil",
+        desc: "Gabriel Chocolate, Wulura Olive Oil",
         address: "219 Harmans Mill Rd, Metricup WA 6280",
         tag: "activity",
         duration: "1h 10m",
@@ -264,7 +262,7 @@ const tripData = [
       },
       {
         time: "13:30",
-        desc: "Dunsborough: Lions Shed, Cape Emporium, Dunsborough Books",
+        desc: "Dunsborough: Lions Shed, Cape Emporium",
         address: "6 Eyre St, Dunsborough WA 6281",
         tag: "activity",
         duration: "1h 15m",
@@ -339,11 +337,11 @@ const tripData = [
       },
       {
         time: "10:00",
-        desc: "Shop Cowaramup: Mukau Giftware, Candy Cow, Temper Temper Chocolate",
+        desc: "Shop Cowaramup: Mukau Giftware, Candy Cow",
         address: "69 Bussell Hwy, Cowaramup WA 6284",
         tag: "activity",
         duration: "1 hour",
-        tip: "Known locally as 'Cow Town'. Keep an eye out for the 42 life-sized fiberglass cow statues.",
+        fact: "There are exactly 42 life-sized fiberglass cow statues scattered around this town.",
       },
       {
         time: "11:00",
@@ -367,7 +365,7 @@ const tripData = [
         address: "17 Foreshore Parade, Busselton WA 6280",
         tag: "activity",
         duration: "1 hour",
-        tip: "$5 entry fee. It's a brisk 25-minute walk each way—a great way to walk off lunch!",
+        fact: "There is actually a fully submerged underwater observatory located at the very end of the pier.",
       },
       {
         time: "15:00",
@@ -525,7 +523,7 @@ const tripData = [
         address: "George Rd, Middle Swan WA 6056",
         tag: "activity",
         duration: "30 mins",
-        tip: "Beautiful rustic setting. Look for unique Australiana pieces.",
+        fact: "Housed in a rustic stable block from the early 1900s.",
       },
       {
         time: "14:00",
@@ -608,7 +606,7 @@ const tripData = [
       },
       {
         time: "10:30",
-        desc: "Explore: Mills Records, High Street Mall, Elizabeth's Bookshop",
+        desc: "Explore: Mills Records, Elizabeth's Bookshop",
         address: "22 Adelaide St, Fremantle WA 6160",
         tag: "activity",
         duration: "1h 45m",
@@ -624,7 +622,7 @@ const tripData = [
       },
       {
         time: "13:45",
-        desc: "Shopping: Common Ground, Ginger Pudding Vintage, Bill Campbell Books",
+        desc: "Shopping: Common Ground, Ginger Pudding Vintage",
         address: "61 High St, Fremantle WA 6160",
         tag: "activity",
         duration: "1h 15m",
@@ -677,7 +675,7 @@ const tripData = [
         address: "120 Trichet Rd, Wanneroo WA 6065",
         tag: "activity",
         duration: "1h 45m",
-        tip: "Winter is prime strawberry season in WA—expect them to be massive, ruby red, and super sweet.",
+        fact: "Winter is prime strawberry season in WA—expect them to be massive, ruby red, and super sweet.",
       },
       {
         time: "12:15",
@@ -693,7 +691,7 @@ const tripData = [
         address: "200 Karrinyup Rd, Karrinyup WA 6018",
         tag: "activity",
         duration: "1h 45m",
-        tip: "One of Perth's premier shopping centers. The recent multi-million dollar expansion is beautiful.",
+        fact: "This is one of Perth's premier shopping centers following a recent $800M multi-million dollar expansion.",
       },
       {
         time: "15:45",
@@ -852,7 +850,7 @@ const tripData = [
         desc: "Flight TR17 departs Perth. Arrive Singapore 3:15pm",
         tag: "activity",
         duration: "5h 20m",
-        tip: "Have a safe flight! Don't forget to submit your SG Arrival Card before landing.",
+        fact: "Don't forget to submit your SG Arrival Card within 3 days prior to landing.",
       },
     ],
   },
@@ -868,8 +866,9 @@ function init() {
   startCountdown();
   setupSearch();
   setupFAB();
-  setupThemeToggle();
   setupCurrencyWidget();
+  setupThemeToggle();
+  setupTripInfo();
 }
 
 function loadTheme() {
@@ -942,13 +941,10 @@ function showDay(dayNum) {
   });
   if (!dayData) return;
 
-  // Header Elements
   if (document.getElementById("currentDate"))
     document.getElementById("currentDate").textContent = dayData.date;
   if (document.getElementById("currentTitle"))
     document.getElementById("currentTitle").textContent = dayData.title;
-
-  // Daily Insight / Fact
   if (document.getElementById("insightText"))
     document.getElementById("insightText").textContent = dayData.fact;
   if (document.getElementById("insightIcon"))
@@ -971,16 +967,16 @@ function showDay(dayNum) {
           " " +
           (activity.address || "") +
           " " +
-          (activity.tip || "")
+          (activity.tip || "") +
+          " " +
+          (activity.fact || "")
         ).toLowerCase(),
       });
     });
   }
 
-  // Trigger New Features
   fetchWeather(dayNum);
   setTimeout(updateProgress, 100);
-
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -990,7 +986,6 @@ function createActivityCard(activity, activityId) {
 
   let tagLabel = "Activity";
   let tagClass = "tag-activity";
-
   if (activity.tag === "laundry") {
     tagLabel = "Laundry";
     tagClass = "tag-laundry";
@@ -1004,8 +999,10 @@ function createActivityCard(activity, activityId) {
 
   const isChecked = getCheckboxState(activityId);
 
-  let html = '<div class="activity-header">';
-  html += '<div class="time">' + activity.time + "</div>";
+  let html =
+    '<div class="activity-header"><div class="time">' +
+    activity.time +
+    "</div>";
   html += '<div style="display: flex; align-items: center; gap: 0.75rem;">';
   html +=
     '<input type="checkbox" class="activity-checkbox" id="' +
@@ -1013,21 +1010,27 @@ function createActivityCard(activity, activityId) {
     '" ' +
     (isChecked ? "checked" : "") +
     " />";
-  html += '<div class="tag ' + tagClass + '">' + tagLabel + "</div>";
-  html += "</div></div>";
+  html +=
+    '<div class="tag ' + tagClass + '">' + tagLabel + "</div></div></div>";
   html += '<div class="desc">' + activity.desc + "</div>";
 
-  if (activity.duration) {
+  if (activity.duration)
     html +=
       '<div class="duration"><i class="fa-regular fa-clock"></i> ' +
       activity.duration +
       "</div>";
-  }
 
+  // Renders the specific Tip OR Fact style based on what is in the data
   if (activity.tip) {
     html +=
-      '<div class="tip"><i class="fa-solid fa-lightbulb"></i> ' +
+      '<div class="inline-tip"><i class="fa-solid fa-lightbulb"></i> ' +
       activity.tip +
+      "</div>";
+  }
+  if (activity.fact) {
+    html +=
+      '<div class="inline-fact"><i class="fa-solid fa-circle-info"></i> ' +
+      activity.fact +
       "</div>";
   }
 
@@ -1035,26 +1038,16 @@ function createActivityCard(activity, activityId) {
     const mapUrl =
       "https://www.google.com/maps/search/?api=1&query=" +
       encodeURIComponent(activity.address);
-    const safeAddress = activity.address.replace(/'/g, "\\'"); // Prevents crashes if address has an apostrophe
-
+    const safeAddress = activity.address.replace(/'/g, "\\'");
     html += '<div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">';
-
-    // Map Button
     html +=
       '<a href="' +
       mapUrl +
-      '" target="_blank" rel="noopener" class="map-link">';
-    html += '<i class="fa-solid fa-location-dot"></i> Open Map</a>';
-
-    // Copy Button (Uses map-link styling but with different colors)
+      '" target="_blank" rel="noopener" class="map-link"><i class="fa-solid fa-location-dot"></i> Open Map</a>';
     html +=
       "<button onclick=\"copyAddress('" +
       safeAddress +
-      '\', this)" class="map-link" ';
-    html +=
-      'style="background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); cursor: pointer;">';
-    html += '<i class="fa-regular fa-copy"></i> Copy</button>';
-
+      '\', this)" class="map-link" style="background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border);"><i class="fa-regular fa-copy"></i> Copy</button>';
     html += "</div>";
   }
 
@@ -1064,13 +1057,8 @@ function createActivityCard(activity, activityId) {
   if (checkbox) {
     checkbox.addEventListener("change", function () {
       saveCheckboxState(activityId, this.checked);
-      if (this.checked) {
-        card.style.opacity = "0.6";
-        card.style.textDecoration = "line-through";
-      } else {
-        card.style.opacity = "1";
-        card.style.textDecoration = "none";
-      }
+      card.style.opacity = this.checked ? "0.6" : "1";
+      card.style.textDecoration = this.checked ? "line-through" : "none";
       updateProgress();
     });
   }
@@ -1079,9 +1067,24 @@ function createActivityCard(activity, activityId) {
     card.style.opacity = "0.6";
     card.style.textDecoration = "line-through";
   }
-
   return card;
 }
+
+window.copyAddress = function (text, btn) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () {
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+      btn.style.color = "var(--tip-color)";
+      btn.style.borderColor = "var(--tip-color)";
+      setTimeout(function () {
+        btn.innerHTML = originalHTML;
+        btn.style.color = "var(--text-primary)";
+        btn.style.borderColor = "var(--border)";
+      }, 2000);
+    });
+  }
+};
 
 function saveCheckboxState(id, checked) {
   let savedStates = JSON.parse(
@@ -1104,18 +1107,16 @@ function startCountdown() {
   const tripStart = new Date("June 26, 2026 09:00:00").getTime();
 
   function update() {
-    const now = new Date().getTime();
-    const diff = tripStart - now;
-
+    const diff = tripStart - new Date().getTime();
     if (diff < 0) {
       countdown.innerHTML = '<i class="fa-solid fa-plane"></i> Trip Started!';
       return;
     }
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     countdown.innerHTML =
-      '<i class="fa-solid fa-calendar"></i> ' + days + " days until departure";
+      '<i class="fa-solid fa-calendar"></i> ' +
+      Math.floor(diff / (1000 * 60 * 60 * 24)) +
+      " days until departure";
   }
-
   update();
   setInterval(update, 60000);
 }
@@ -1130,7 +1131,6 @@ function setupSearch() {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(function () {
       const query = e.target.value.toLowerCase().trim();
-
       if (query === "") {
         allActivities.forEach(function (item) {
           item.element.style.display = "block";
@@ -1143,18 +1143,18 @@ function setupSearch() {
         searchInfo.textContent = "";
         return;
       }
-
       let found = 0;
       allActivities.forEach(function (item) {
         if (item.text.includes(query)) {
           item.element.style.display = "block";
           found++;
           const desc = item.element.querySelector(".desc");
-          let html = desc.innerHTML;
-          html = html.replace(/<mark class="highlight">|<\/mark>/g, "");
-          const regex = new RegExp("(" + query + ")", "gi");
-          html = html.replace(regex, '<mark class="highlight">$1</mark>');
-          desc.innerHTML = html;
+          desc.innerHTML = desc.innerHTML
+            .replace(/<mark class="highlight">|<\/mark>/g, "")
+            .replace(
+              new RegExp("(" + query + ")", "gi"),
+              '<mark class="highlight">$1</mark>'
+            );
         } else {
           item.element.style.display = "none";
         }
@@ -1169,52 +1169,67 @@ function setupFAB() {
   const fabBtn = document.getElementById("fabBtn");
   const jumpToday = document.getElementById("jumpToday");
   const shareBtn = document.getElementById("shareBtn");
+  const emergencyBtn = document.getElementById("emergencyBtn");
+  const emergencyModal = document.getElementById("emergencyModal");
+  const closeEmergency = document.getElementById("closeEmergency");
 
-  if (!fab || !fabBtn || !jumpToday || !shareBtn) return;
+  if (!fab || !fabBtn) return;
 
   fabBtn.addEventListener("click", function (e) {
     e.stopPropagation();
     fab.classList.toggle("active");
-    const icon = fabBtn.querySelector("i");
-    if (icon) {
-      icon.className = fab.classList.contains("active")
-        ? "fa-solid fa-xmark"
-        : "fa-solid fa-ellipsis";
-    }
   });
 
-  jumpToday.addEventListener("click", function () {
-    const today = new Date();
-    const tripStart = new Date("2026-06-26");
-    const diff = today - tripStart;
-    const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  if (jumpToday) {
+    jumpToday.addEventListener("click", function () {
+      const diff = new Date() - new Date("2026-06-26");
+      const daysDiff = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      if (daysDiff >= 1 && daysDiff <= 11) {
+        currentDay = daysDiff;
+        showDay(daysDiff);
+        createDayTabs();
+      } else {
+        alert("Trip not active yet or already ended");
+      }
+      closeFAB();
+    });
+  }
 
-    if (daysDiff >= 1 && daysDiff <= 11) {
-      currentDay = daysDiff;
-      showDay(daysDiff);
-      createDayTabs();
-    } else {
-      alert("Trip not active yet or already ended");
-    }
-    closeFAB();
-  });
+  if (shareBtn) {
+    shareBtn.addEventListener("click", function () {
+      if (navigator.share)
+        navigator
+          .share({
+            title: "Perth Trip 2026",
+            text: "Check out our Perth itinerary",
+            url: window.location.href,
+          })
+          .catch(function () {});
+      else {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+      }
+      closeFAB();
+    });
+  }
 
-  shareBtn.addEventListener("click", function () {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: "Perth Trip 2026",
-          text: "Check out our Perth itinerary",
-          url: window.location.href,
-        })
-        .catch(function () {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
-    }
-    closeFAB();
-  });
-
+  if (emergencyBtn && emergencyModal) {
+    emergencyBtn.addEventListener("click", function () {
+      emergencyModal.classList.add("active");
+      closeFAB();
+    });
+  }
+  if (closeEmergency) {
+    closeEmergency.addEventListener("click", function () {
+      emergencyModal.classList.remove("active");
+    });
+  }
+  if (emergencyModal) {
+    emergencyModal.addEventListener("click", function (e) {
+      if (e.target === emergencyModal)
+        emergencyModal.classList.remove("active");
+    });
+  }
   document.addEventListener("click", function (e) {
     if (fab && !fab.contains(e.target)) closeFAB();
   });
@@ -1222,12 +1237,24 @@ function setupFAB() {
 
 function closeFAB() {
   const fab = document.getElementById("fab");
-  const fabBtn = document.getElementById("fabBtn");
   if (fab) fab.classList.remove("active");
-  if (fabBtn) {
-    const icon = fabBtn.querySelector("i");
-    if (icon) icon.className = "fa-solid fa-ellipsis";
-  }
+}
+
+function setupTripInfo() {
+  const btn = document.getElementById("tripInfoBtn");
+  const modal = document.getElementById("tripInfoModal");
+  const closeBtn = document.getElementById("closeTripInfo");
+  if (!btn || !modal) return;
+  btn.addEventListener("click", function () {
+    modal.classList.add("active");
+  });
+  if (closeBtn)
+    closeBtn.addEventListener("click", function () {
+      modal.classList.remove("active");
+    });
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) modal.classList.remove("active");
+  });
 }
 
 function setupCurrencyWidget() {
@@ -1250,28 +1277,23 @@ function setupCurrencyWidget() {
       fetchExchangeRate();
   });
 
-  if (closeBtn) {
+  if (closeBtn)
     closeBtn.addEventListener("click", function () {
       widget.classList.remove("active");
     });
-  }
-
   document.addEventListener("click", function (e) {
     if (!widget.contains(e.target)) widget.classList.remove("active");
   });
 
   sgdInput.addEventListener("input", function () {
-    if (!isReversed) {
-      const sgd = parseFloat(this.value) || 0;
-      audInput.value = (sgd * currentRate).toFixed(2);
-    }
+    if (!isReversed)
+      audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
   });
 
   if (swapBtn) {
     swapBtn.addEventListener("click", function () {
       isReversed = !isReversed;
       const labels = document.querySelectorAll(".currency-input-group label");
-
       if (isReversed) {
         sgdInput.removeAttribute("readonly");
         audInput.removeAttribute("readonly");
@@ -1295,8 +1317,9 @@ function setupCurrencyWidget() {
   }
 
   function convertReverse() {
-    const aud = parseFloat(audInput.value) || 0;
-    sgdInput.value = (aud / currentRate).toFixed(2);
+    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(
+      2
+    );
   }
 
   quickBtns.forEach(function (btn) {
@@ -1327,15 +1350,13 @@ function setupCurrencyWidget() {
         if (rateDisplay)
           rateDisplay.textContent =
             "1 SGD = " + currentRate.toFixed(4) + " AUD";
-        if (updatedDisplay) {
-          const now = new Date();
+        if (updatedDisplay)
           updatedDisplay.textContent =
             "Updated at " +
-            now.toLocaleTimeString("en-SG", {
+            new Date().toLocaleTimeString("en-SG", {
               hour: "2-digit",
               minute: "2-digit",
             });
-        }
         sgdInput.dispatchEvent(new Event("input"));
       })
       .catch(function (error) {
@@ -1343,51 +1364,39 @@ function setupCurrencyWidget() {
         if (updatedDisplay) updatedDisplay.textContent = "Please try again";
       });
   }
-
   fetchExchangeRate();
   setInterval(fetchExchangeRate, 300000);
 }
 
-// ENHANCED FUNCTION: Live Weather with CURRENT Hour Rain Chance
 async function fetchWeather(dayNum) {
   const weatherDiv = document.getElementById("liveWeather");
   if (!weatherDiv) return;
-
   weatherDiv.style.flexDirection = "column";
   weatherDiv.style.alignItems = "flex-start";
   weatherDiv.style.gap = "0.25rem";
-
   weatherDiv.innerHTML =
     '<div style="display:flex; gap:0.5rem; align-items:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching weather...</div>';
 
   const isDownSouth = dayNum <= 5;
-  const lat = isDownSouth ? -33.95 : -31.95;
-  const lon = isDownSouth ? 115.08 : 115.86;
   const locationName = isDownSouth ? "Margaret River" : "Perth";
 
   try {
-    // We now fetch 'hourly=precipitation_probability' and ask for 2 days of data just to be safe around midnight
     const url =
       "https://api.open-meteo.com/v1/forecast?latitude=" +
-      lat +
+      (isDownSouth ? -33.95 : -31.95) +
       "&longitude=" +
-      lon +
+      (isDownSouth ? 115.08 : 115.86) +
       "&current=temperature_2m,weather_code,apparent_temperature,wind_speed_10m&hourly=precipitation_probability&timezone=Australia%2FPerth&forecast_days=2";
-
     const response = await fetch(url);
     if (!response.ok) throw new Error("API Blocked");
 
     const data = await response.json();
-
-    // Parse current conditions
     const temp = Math.round(data.current.temperature_2m);
     const code = data.current.weather_code;
     const feelsLike = Math.round(data.current.apparent_temperature);
     const wind = Math.round(data.current.wind_speed_10m);
 
-    // Find the exact current hour in the hourly array to get the live rain chance
-    const currentTimeString = data.current.time;
-    const timeIndex = data.hourly.time.indexOf(currentTimeString);
+    const timeIndex = data.hourly.time.indexOf(data.current.time);
     const rainChance =
       timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
 
@@ -1398,49 +1407,45 @@ async function fetchWeather(dayNum) {
     else if (code >= 51 && code <= 67) icon = "fa-cloud-rain";
     else if (code >= 71) icon = "fa-snowflake";
 
-    // Build the 2-line badge with neat icons
     let html =
-      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;">';
-    html +=
-      '<i class="fa-solid ' + icon + '"></i> ' + temp + "°C in " + locationName;
-    html += "</div>";
-
+      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;"><i class="fa-solid ' +
+      icon +
+      '"></i> ' +
+      temp +
+      "°C in " +
+      locationName +
+      "</div>";
     html +=
       '<div style="display:flex; align-items:center; gap:0.6rem; font-size:0.75rem; font-weight:600; opacity:0.75; letter-spacing:0.02em;">';
-    html += "<span>Feels " + feelsLike + "°C</span>•";
-    html += '<span><i class="fa-solid fa-wind"></i> ' + wind + " km/h</span>•";
     html +=
-      '<span><i class="fa-solid fa-umbrella"></i> ' + rainChance + "%</span>";
-    html += "</div>";
-
+      "<span>Feels " +
+      feelsLike +
+      '°C</span>•<span><i class="fa-solid fa-wind"></i> ' +
+      wind +
+      ' km/h</span>•<span><i class="fa-solid fa-umbrella"></i> ' +
+      rainChance +
+      "%</span></div>";
     weatherDiv.innerHTML = html;
   } catch (error) {
     const mockTemp = isDownSouth ? 14 : 18;
-    const mockIcon = isDownSouth ? "fa-cloud-sun" : "fa-sun";
-
     let html =
-      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;">';
-    html +=
-      '<i class="fa-solid ' +
-      mockIcon +
+      '<div style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem;"><i class="fa-solid ' +
+      (isDownSouth ? "fa-cloud-sun" : "fa-sun") +
       '"></i> ~' +
       mockTemp +
       "°C in " +
-      locationName;
-    html += "</div>";
-
+      locationName +
+      "</div>";
     html +=
       '<div style="display:flex; align-items:center; gap:0.6rem; font-size:0.75rem; font-weight:600; opacity:0.75; letter-spacing:0.02em;">';
-    html += "<span>Feels ~" + (mockTemp - 2) + "°C</span>•";
-    html += '<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•';
-    html += '<span><i class="fa-solid fa-umbrella"></i> 0%</span>';
-    html += "</div>";
-
+    html +=
+      "<span>Feels ~" +
+      (mockTemp - 2) +
+      '°C</span>•<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•<span><i class="fa-solid fa-umbrella"></i> 0%</span></div>';
     weatherDiv.innerHTML = html;
   }
 }
 
-// NEW FUNCTION: Progress Tracker
 function updateProgress() {
   const checkboxes = document.querySelectorAll(".activity-checkbox");
   const dayProgress = document.getElementById("dayProgress");
@@ -1460,23 +1465,5 @@ function updateProgress() {
   progressText.textContent =
     percent + "% (" + checkedBoxes.length + "/" + checkboxes.length + ")";
 }
-// NEW FUNCTION: Copy Address to Clipboard
-window.copyAddress = function (text, btn) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function () {
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-      btn.style.color = "var(--accent-2)";
-      btn.style.borderColor = "var(--accent-2)";
-
-      // Change back after 2 seconds
-      setTimeout(function () {
-        btn.innerHTML = originalHTML;
-        btn.style.color = "var(--text-primary)";
-        btn.style.borderColor = "var(--border)";
-      }, 2000);
-    });
-  }
-};
 
 window.addEventListener("load", init);
