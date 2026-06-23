@@ -104,12 +104,8 @@
       <div class="timeline" id="timeline"></div>
     </div>
 
+    <!-- Currency popup panel - anchored above the toolbar -->
     <div class="currency-widget" id="currencyWidget">
-      <button class="currency-toggle" id="currencyToggle">
-        <i class="fa-solid fa-dollar-sign"></i>
-        <span>SGD/AUD</span>
-      </button>
-
       <div class="currency-panel" id="currencyPanel">
         <div class="currency-header">
           <h3>Currency Exchange</h3>
@@ -161,36 +157,50 @@
       </div>
     </div>
 
-    <div class="trip-info-widget">
-      <button class="trip-info-toggle" id="tripInfoBtn">
-        <i class="fa-solid fa-suitcase-rolling"></i>
-        <span class="hide-mobile"> Trip Info</span>
+    <!-- "More" popup menu - anchored above the toolbar -->
+    <div class="more-menu" id="moreMenu">
+      <button class="more-option" id="jumpToday">
+        <i class="fa-solid fa-calendar-day"></i> Go to Today
+      </button>
+      <button class="more-option" id="printDayBtn">
+        <i class="fa-solid fa-print"></i> Print Day Sheet
+      </button>
+      <button class="more-option" id="shareBtn">
+        <i class="fa-solid fa-share-nodes"></i> Share
+      </button>
+      <button class="more-option" id="emergencyBtn" style="color: #e53e3e">
+        <i class="fa-solid fa-triangle-exclamation"></i> Emergency Info
       </button>
     </div>
 
-    <!-- Floating Action Button (Menu) -->
-    <div class="fab" id="fab">
-      <button class="fab-btn" id="fabBtn" aria-label="Open menu">
-        <i class="fa-solid fa-bars"></i>
+    <!-- Unified bottom toolbar -->
+    <nav class="bottom-toolbar" id="bottomToolbar">
+      <button
+        class="toolbar-btn"
+        id="currencyToggle"
+        aria-label="Currency converter"
+      >
+        <i class="fa-solid fa-dollar-sign"></i>
+        <span>Currency</span>
       </button>
-      <div class="fab-menu">
-        <button class="fab-option" onclick="openMap()">
-          <i class="fa-solid fa-map-location-dot"></i> View Map
-        </button>
-        <button class="fab-option" id="jumpToday">
-          <i class="fa-solid fa-calendar-day"></i> Go to Today
-        </button>
-        <button class="fab-option" id="printDayBtn">
-          <i class="fa-solid fa-print"></i> Print Day Sheet
-        </button>
-        <button class="fab-option" id="shareBtn">
-          <i class="fa-solid fa-share-nodes"></i> Share
-        </button>
-        <button class="fab-option" id="emergencyBtn" style="color: #e53e3e">
-          <i class="fa-solid fa-triangle-exclamation"></i> Emergency Info
-        </button>
-      </div>
-    </div>
+      <button class="toolbar-btn" id="tripInfoBtn" aria-label="Trip info">
+        <i class="fa-solid fa-suitcase-rolling"></i>
+        <span>Trip Info</span>
+      </button>
+      <button
+        class="toolbar-btn"
+        id="mapBtn"
+        aria-label="View map"
+        onclick="openMap()"
+      >
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Map</span>
+      </button>
+      <button class="toolbar-btn" id="moreBtn" aria-label="More options">
+        <i class="fa-solid fa-ellipsis"></i>
+        <span>More</span>
+      </button>
+    </nav>
 
     <div class="modal-overlay" id="tripInfoModal">
       <div class="modal-content info-modal-content">

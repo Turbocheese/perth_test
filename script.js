@@ -87,6 +87,8 @@ const tripData = [
         tag: "activity",
         duration: "1.5 hours",
         tip: "Arrive early for the best artisan pastries. Bring cash just in case.",
+        wetWeatherAlt:
+          "If it's raining, skip the market picnic prep and head straight towards Cape Leeuwin instead — stop at Augusta Bakery, 121 Blackwood Ave, Augusta, for a quick pie lunch around 10:45am.",
       },
       {
         time: "10:30",
@@ -95,6 +97,8 @@ const tripData = [
         tag: "activity",
         duration: "3 hours",
         tip: "It's the point where the Indian and Southern Oceans meet. Very windy—layer up!",
+        wetWeatherAlt:
+          "If it's raining when you arrive, skip the Lighthouse and go straight to Jewel Cave instead.",
       },
       {
         time: "13:30",
@@ -902,7 +906,7 @@ function init() {
   showDay(1);
   startCountdown();
   setupSearch();
-  setupFAB();
+  setupMoreMenu();
   setupCurrencyWidget();
   setupTripInfo();
   initMap();
@@ -1256,6 +1260,11 @@ function createActivityCard(activity, activityId) {
       html += `<div class="inline-warning"><i class="fa-solid fa-triangle-exclamation"></i> ${warning}</div>`;
     }
   }
+  if (activity.wetWeatherAlt) {
+    html += `<div class="inline-wet-alt"><i class="fa-solid fa-cloud-rain"></i> <strong>If it rains:</strong> ${escapeHTML(
+      activity.wetWeatherAlt
+    )}</div>`;
+  }
   if (activity.address) {
     const mapUrl =
       "https://www.google.com/maps/search/?api=1&query=" +
@@ -1542,7 +1551,7 @@ async function fetchWeather(dayNum) {
       <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
         <span>Feels ${feelsLike}°C</span>•<span><i class="fa-solid fa-wind"></i> ${wind} km/h</span>•<span><i class="fa-solid fa-umbrella"></i> ${rainChance}%</span>
       </div>`;
-    showWeatherNudge(rainChance, temp);
+    showWeatherNudge(rainChance, temp, dayNum);
   } catch {
     const mockTemp = isDownSouth ? 14 : 18;
     weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
@@ -1559,13 +1568,18 @@ async function fetchWeather(dayNum) {
   }
 }
 
-function showWeatherNudge(rainChance, temp) {
+function showWeatherNudge(rainChance, temp, dayNum) {
   const nudge = document.getElementById("weatherNudge");
   if (!nudge) return;
 
   if (rainChance >= 50) {
     nudge.style.display = "flex";
-    nudge.innerHTML = `<i class="fa-solid fa-umbrella"></i> <span><strong>${rainChance}% chance of rain today</strong> — pack the umbrella and a light rain jacket. Check today's activities for a wet-weather alternative.</span>`;
+    const dayData = tripData.find((d) => d.day === dayNum);
+    const hasAlt = dayData && dayData.activities.some((a) => a.wetWeatherAlt);
+    const altNote = hasAlt
+      ? " This day has a wet-weather alternative — look for the rain-cloud note on the affected activities below."
+      : "";
+    nudge.innerHTML = `<i class="fa-solid fa-umbrella"></i> <span><strong>${rainChance}% chance of rain today</strong> — pack the umbrella and a light rain jacket.${altNote}</span>`;
     nudge.className = "weather-nudge weather-nudge-rain";
   } else if (temp <= 10) {
     nudge.style.display = "flex";
@@ -1594,15 +1608,27 @@ function setupCurrencyWidget() {
   let currentRate = 0;
   let isReversed = false;
 
-  toggle.addEventListener("click", () => {
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
     widget.classList.toggle("active");
+    toggle.classList.toggle("active");
     if (widget.classList.contains("active") && currentRate === 0) fetchRate();
+    updatePopupOpenState();
   });
 
-  if (closeBtn)
-    closeBtn.addEventListener("click", () => widget.classList.remove("active"));
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      widget.classList.remove("active");
+      toggle.classList.remove("active");
+      updatePopupOpenState();
+    });
+  }
   document.addEventListener("click", (e) => {
-    if (!widget.contains(e.target)) widget.classList.remove("active");
+    if (!widget.contains(e.target) && !toggle.contains(e.target)) {
+      widget.classList.remove("active");
+      toggle.classList.remove("active");
+      updatePopupOpenState();
+    }
   });
 
   sgdInput.addEventListener("input", function () {
@@ -1683,9 +1709,9 @@ function setupCurrencyWidget() {
   fetchRate();
   setInterval(fetchRate, 300000);
 }
-function setupFAB() {
-  const fab = document.getElementById("fab");
-  const fabBtn = document.getElementById("fabBtn");
+function setupMoreMenu() {
+  const moreBtn = document.getElementById("moreBtn");
+  const moreMenu = document.getElementById("moreMenu");
   const jumpToday = document.getElementById("jumpToday");
   const printDayBtn = document.getElementById("printDayBtn");
   const shareBtn = document.getElementById("shareBtn");
@@ -1693,11 +1719,13 @@ function setupFAB() {
   const emergencyModal = document.getElementById("emergencyModal");
   const closeEmergency = document.getElementById("closeEmergency");
 
-  if (!fab || !fabBtn) return;
+  if (!moreBtn || !moreMenu) return;
 
-  fabBtn.addEventListener("click", function (e) {
+  moreBtn.addEventListener("click", function (e) {
     e.stopPropagation();
-    fab.classList.toggle("active");
+    moreMenu.classList.toggle("active");
+    moreBtn.classList.toggle("active");
+    updatePopupOpenState();
   });
 
   if (jumpToday) {
@@ -1713,14 +1741,14 @@ function setupFAB() {
       } else {
         alert("Trip not active yet or already ended");
       }
-      closeFAB();
+      closeMoreMenu();
     });
   }
 
   if (printDayBtn) {
     printDayBtn.addEventListener("click", function () {
       printDaySheet(currentDay);
-      closeFAB();
+      closeMoreMenu();
     });
   }
 
@@ -1747,7 +1775,7 @@ function setupFAB() {
           alert("Day link copied! Share: " + dayUrl);
         });
       }
-      closeFAB();
+      closeMoreMenu();
     });
   }
 
@@ -1755,7 +1783,7 @@ function setupFAB() {
     emergencyBtn.addEventListener("click", function () {
       emergencyModal.classList.add("active");
       document.body.style.overflow = "hidden";
-      closeFAB();
+      closeMoreMenu();
     });
   }
 
@@ -1776,13 +1804,33 @@ function setupFAB() {
   }
 
   document.addEventListener("click", function (e) {
-    if (fab && !fab.contains(e.target)) closeFAB();
+    if (
+      moreMenu &&
+      !moreMenu.contains(e.target) &&
+      !moreBtn.contains(e.target)
+    ) {
+      closeMoreMenu();
+    }
   });
 }
 
-function closeFAB() {
-  const fab = document.getElementById("fab");
-  if (fab) fab.classList.remove("active");
+function closeMoreMenu() {
+  const moreMenu = document.getElementById("moreMenu");
+  const moreBtn = document.getElementById("moreBtn");
+  if (moreMenu) moreMenu.classList.remove("active");
+  if (moreBtn) moreBtn.classList.remove("active");
+  updatePopupOpenState();
+}
+
+// Tracks whether any bottom popup (currency panel / more menu) is open,
+// so the scroll-to-top and next-activity-timer buttons can get out of the way.
+function updatePopupOpenState() {
+  const currencyWidget = document.getElementById("currencyWidget");
+  const moreMenu = document.getElementById("moreMenu");
+  const anyOpen =
+    (currencyWidget && currencyWidget.classList.contains("active")) ||
+    (moreMenu && moreMenu.classList.contains("active"));
+  document.body.classList.toggle("popup-open", anyOpen);
 }
 
 function printDaySheet(dayNum) {
@@ -1830,6 +1878,13 @@ function printDaySheet(dayNum) {
               activity.tip
                 ? `<span class="tip-cell">Tip: ${escapeHTML(
                     activity.tip
+                  )}</span><br/>`
+                : ""
+            }
+            ${
+              activity.wetWeatherAlt
+                ? `<span class="wet-cell">If it rains: ${escapeHTML(
+                    activity.wetWeatherAlt
                   )}</span>`
                 : ""
             }
@@ -1855,6 +1910,7 @@ function printDaySheet(dayNum) {
         .addr-cell { color: #555; }
         .dur-cell { color: #888; font-size: 0.8rem; }
         .tip-cell { color: #2563eb; font-size: 0.8rem; }
+        .wet-cell { color: #1d4ed8; font-size: 0.8rem; font-style: italic; }
         @media print {
           body { padding: 0.5rem; }
         }

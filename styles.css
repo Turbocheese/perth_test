@@ -18,6 +18,7 @@
   --shadow-lg: 0 16px 48px rgba(30, 58, 95, 0.12);
   --radius-sm: 8px;
   --radius-md: 12px;
+  --toolbar-height: 4.25rem;
   --radius-lg: 20px;
   --animation-speed: 0.3s;
   --touch-target-min: 44px;
@@ -53,7 +54,7 @@ body {
   color: var(--text-primary);
   font-family: "Outfit", sans-serif;
   line-height: 1.6;
-  padding-bottom: 6rem;
+  padding-bottom: calc(var(--toolbar-height) + 1rem);
   transition: background var(--animation-speed) ease,
     color var(--animation-speed) ease;
 }
@@ -659,6 +660,26 @@ h2 {
   margin-right: 0.5rem;
 }
 
+.inline-wet-alt {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.85rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: rgba(37, 99, 235, 0.08);
+  border-left: 4px solid #2563eb;
+  line-height: 1.4;
+}
+.inline-wet-alt i {
+  color: #2563eb;
+  margin-right: 0.4rem;
+}
+[data-theme="dark"] .inline-wet-alt {
+  background: rgba(96, 165, 250, 0.1);
+}
+[data-theme="dark"] .inline-wet-alt i {
+  color: #60a5fa;
+}
+
 .weather-nudge {
   display: flex;
   align-items: flex-start;
@@ -717,86 +738,97 @@ h2 {
   cursor: pointer;
   accent-color: var(--accent-1);
 }
-/* ===== FLOATING BUTTONS & MENUS ===== */
-.currency-widget {
+/* ===== UNIFIED BOTTOM TOOLBAR ===== */
+.bottom-toolbar {
   position: fixed;
-  bottom: 2rem;
-  left: 1.5rem;
-  z-index: 200;
-}
-.currency-toggle {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  padding: 0.8rem 1.5rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  box-shadow: var(--shadow-lg);
-}
-.trip-info-widget {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 200;
-}
-.trip-info-toggle {
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: var(--shadow-lg);
-}
-.fab {
-  position: fixed;
-  bottom: 2rem;
-  right: 1.5rem;
-  z-index: 200;
-}
-.fab-btn {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: var(--accent-1);
-  color: white;
-  border: none;
-  box-shadow: var(--shadow-lg);
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.fab-menu {
-  position: absolute;
-  bottom: 70px;
+  bottom: 0;
+  left: 0;
   right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: stretch;
+  height: var(--toolbar-height);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.toolbar-btn {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+.toolbar-btn i {
+  font-size: 1.15rem;
+}
+.toolbar-btn.active,
+.toolbar-btn[aria-label="View map"]:active {
+  color: var(--accent-1);
+}
+
+/* Currency converter popup - floats above the toolbar */
+.currency-widget {
+  position: fixed;
+  bottom: calc(var(--toolbar-height) + 0.75rem);
+  left: 1rem;
+  z-index: 199;
+  pointer-events: none;
+}
+.currency-widget.active {
+  pointer-events: all;
+}
+.currency-panel {
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px);
   transition: all 0.2s ease;
 }
-.fab.active .fab-menu {
+.currency-widget.active .currency-panel {
   opacity: 1;
   pointer-events: all;
   transform: translateY(0);
 }
-.fab-option {
+
+/* "More" menu popup - floats above the toolbar */
+.more-menu {
+  position: fixed;
+  bottom: calc(var(--toolbar-height) + 0.75rem);
+  right: 1rem;
+  z-index: 199;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  max-height: calc(100vh - var(--toolbar-height) - 6rem);
+  overflow-y: auto;
+}
+.more-menu.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+.more-option {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   padding: 0.8rem 1.5rem;
@@ -814,8 +846,8 @@ h2 {
 
 .scroll-to-top {
   position: fixed;
-  bottom: 8rem;
-  right: 1.5rem;
+  bottom: calc(var(--toolbar-height) + 0.75rem);
+  right: 1rem;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -825,7 +857,7 @@ h2 {
   box-shadow: var(--shadow-lg);
   font-size: 1.2rem;
   cursor: pointer;
-  z-index: 199;
+  z-index: 198;
   opacity: 0;
   visibility: hidden;
   transform: scale(0.8);
@@ -839,8 +871,8 @@ h2 {
 
 .next-activity-timer {
   position: fixed;
-  bottom: 15rem;
-  right: 1.5rem;
+  bottom: calc(var(--toolbar-height) + 4.25rem);
+  right: 1rem;
   background: var(--accent-2);
   color: white;
   padding: 0.75rem 1.25rem;
@@ -848,7 +880,7 @@ h2 {
   font-size: 0.85rem;
   font-weight: 600;
   box-shadow: var(--shadow-lg);
-  z-index: 198;
+  z-index: 197;
   opacity: 0;
   visibility: hidden;
   display: flex;
@@ -861,9 +893,18 @@ h2 {
   visibility: visible;
 }
 
+/* Hide the floating scroll/timer buttons while a toolbar popup is open,
+   so they never visually collide with the currency panel or more menu */
+body.popup-open .scroll-to-top,
+body.popup-open .next-activity-timer {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .install-prompt {
   position: fixed;
-  bottom: 2rem;
+  bottom: calc(var(--toolbar-height) + 1rem);
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent-1);
@@ -896,28 +937,7 @@ h2 {
   margin-left: auto;
 }
 
-/* ===== CURRENCY PANEL ===== */
-.currency-panel {
-  position: absolute;
-  bottom: 65px;
-  left: 0;
-  width: 340px;
-  max-width: calc(100vw - 3rem);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: 1.5rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-  transition: all 0.2s ease;
-}
-.currency-widget.active .currency-panel {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateY(0);
-}
+/* ===== CURRENCY PANEL CONTENTS ===== */
 .currency-header {
   display: flex;
   justify-content: space-between;
@@ -1265,18 +1285,10 @@ h2 {
   .map-link:hover {
     background: var(--bg-primary);
   }
-  .currency-toggle:hover {
-    transform: translateY(-3px);
+  .toolbar-btn:hover {
+    color: var(--accent-1);
   }
-  .trip-info-toggle:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(30, 58, 95, 0.4);
-  }
-  .fab-btn:hover {
-    transform: scale(1.05);
-    background: var(--accent-2);
-  }
-  .fab-option:hover {
+  .more-option:hover {
     background: var(--bg-primary);
   }
   .quick-btn:hover {
@@ -1364,64 +1376,14 @@ h2 {
     border-radius: 50%;
     justify-content: center;
   }
-  .next-activity-timer {
-    bottom: 16rem;
-    right: 1rem;
-    left: 1rem;
-    justify-content: center;
-  }
-  .scroll-to-top {
-    bottom: 8.5rem;
-    right: 1rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding-bottom: 12rem;
+  .toolbar-btn {
+    font-size: 0.58rem;
   }
-  .currency-widget {
-    bottom: 8.5rem;
-    left: 1rem;
-  }
-  .trip-info-widget {
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .fab {
-    bottom: 2rem;
-    right: 1rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .hide-mobile {
-    display: none;
-  }
-  .trip-info-toggle {
-    padding: 0;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 360px) {
-  .currency-widget {
-    bottom: 14rem;
-    right: auto;
-  }
-  .trip-info-widget {
-    bottom: 8.5rem;
-    left: 1rem;
-    transform: none;
-    right: auto;
-  }
-  .trip-info-toggle {
-    width: 100%;
-    max-width: calc(100vw - 2rem);
+  .toolbar-btn i {
+    font-size: 1.05rem;
   }
 }
 
@@ -1439,12 +1401,10 @@ h2 {
 .touch-device .tab:hover,
 .touch-device .activity:hover,
 .touch-device .map-link:hover,
-.touch-device .fab-option:hover,
+.touch-device .more-option:hover,
 .touch-device .quick-btn:hover,
 .touch-device .theme-toggle:hover,
-.touch-device .currency-toggle:hover,
-.touch-device .trip-info-toggle:hover,
-.touch-device .fab-btn:hover,
+.touch-device .toolbar-btn:hover,
 .touch-device .scroll-to-top:hover,
 .touch-device .close-modal:hover,
 .touch-device .search-result-item:hover,
@@ -1462,11 +1422,9 @@ h2 {
 .touch-device .tab,
 .touch-device .activity-checkbox,
 .touch-device .map-link,
-.touch-device .fab-btn,
+.touch-device .toolbar-btn,
 .touch-device .quick-btn,
 .touch-device .close-modal,
-.touch-device .currency-toggle,
-.touch-device .trip-info-toggle,
 .touch-device .theme-toggle,
 .touch-device .map-filter-btn {
   min-width: var(--touch-target-min);
@@ -1516,8 +1474,8 @@ h2 {
   .nav-bar,
   .theme-toggle,
   .currency-widget,
-  .trip-info-widget,
-  .fab,
+  .more-menu,
+  .bottom-toolbar,
   .scroll-to-top,
   .install-prompt,
   .live-weather,
@@ -1577,29 +1535,6 @@ h2 {
       content: "Page " counter(page) " of " counter(pages);
     }
   }
-}
-/* Ensure FAB is visible and styled */
-.fab {
-  position: fixed !important;
-  bottom: 2rem !important;
-  right: 1.5rem !important;
-  z-index: 9999 !important;
-  display: block !important;
-}
-
-.fab-btn {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: var(--accent-1);
-  color: white;
-  border: none;
-  box-shadow: var(--shadow-lg);
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 /* ===== MAP FILTER SELECT ===== */
 .map-controls {
