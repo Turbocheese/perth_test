@@ -120,27 +120,14 @@ header::before {
 }
 
 header::after {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 35px,
-    rgba(255, 255, 255, 0.02) 35px,
-    rgba(255, 255, 255, 0.02) 70px
-  );
+  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="220"%3E%3Cpath d="M-20,30 C40,5 90,55 150,30 C210,5 260,55 320,30 C360,15 390,40 420,30" stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/%3E%3Cpath d="M-20,75 C40,45 90,105 150,75 C210,45 260,105 320,75 C360,58 390,90 420,75" stroke="rgba(197,168,128,0.07)" stroke-width="1" fill="none"/%3E%3Cpath d="M-20,120 C40,90 90,150 150,120 C210,90 260,150 320,120 C360,102 390,138 420,120" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/%3E%3Cpath d="M-20,165 C40,138 90,195 150,165 C210,138 260,195 320,165 C360,148 390,182 420,165" stroke="rgba(255,255,255,0.04)" stroke-width="1" fill="none"/%3E%3Cpath d="M-20,205 C40,182 90,228 150,205 C210,182 260,228 320,205 C360,192 390,218 420,205" stroke="rgba(197,168,128,0.05)" stroke-width="1" fill="none"/%3E%3C/svg%3E');
+  background-size: 400px 220px;
+  background-repeat: repeat;
 }
 
 header > * {
   position: relative;
   z-index: 1;
-}
-
-.header-icons {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center;
-  margin: 1.5rem 0;
-  font-size: 1.2rem;
-  opacity: 0.4;
 }
 
 .label {
@@ -656,6 +643,53 @@ h2 {
 .inline-fact i {
   color: var(--fact-color);
   margin-right: 0.5rem;
+}
+
+.inline-warning {
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: rgba(229, 62, 62, 0.1);
+  border-left: 4px solid #e53e3e;
+  font-weight: 600;
+}
+.inline-warning i {
+  color: #e53e3e;
+  margin-right: 0.5rem;
+}
+
+.weather-nudge {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.weather-nudge i {
+  font-size: 1.1rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+.weather-nudge-rain {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+.weather-nudge-cold {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #4f46e5;
+}
+[data-theme="dark"] .weather-nudge-rain {
+  color: #60a5fa;
+}
+[data-theme="dark"] .weather-nudge-cold {
+  color: #a5b4fc;
 }
 
 .map-link {
@@ -1453,8 +1487,7 @@ h2 {
 }
 
 .touch-device header::before,
-.touch-device header::after,
-.touch-device .header-icons i {
+.touch-device header::after {
   animation: none !important;
   transition: none !important;
 }

@@ -274,6 +274,7 @@ const tripData = [
         address: "2 Canal Rocks Rd, Yallingup WA 6282",
         tag: "activity",
         duration: "1.5 hours",
+        closesAt: "17:00",
         tip: "Their signature lavender scones served with thick cream and jam are a must-try.",
       },
       {
@@ -462,6 +463,7 @@ const tripDataPart2 = [
         address: "Unit 1/5742 S Western Hwy, Pinjarra WA 6208",
         tag: "activity",
         duration: "2 hours",
+        closesAt: "17:00",
         tip: "A massive warehouse full of antiques. Take your time, it's easy to lose an hour here!",
       },
       {
@@ -867,6 +869,8 @@ tripData.push(...tripDataPart3);
 let currentDay = 1;
 let allActivities = [];
 let themeCheckInterval = null;
+let cachedSunTimes = null;
+let cachedSunTimesKey = null;
 
 const THEME_CONFIG = {
   locations: {
@@ -988,9 +992,17 @@ function getCurrentLocation() {
 function isNightTime() {
   const now = new Date();
   const minutes = now.getHours() * 60 + now.getMinutes();
+  const loc = getCurrentLocation();
+  const dateKey = now.toDateString() + "-" + loc.name;
+
+  if (cachedSunTimes && cachedSunTimesKey === dateKey) {
+    return minutes < cachedSunTimes.sunrise || minutes > cachedSunTimes.sunset;
+  }
+
+  // Kick off a fetch for next time; use the formula/fallback for right now
+  refreshSunTimes(loc, dateKey);
 
   try {
-    const loc = getCurrentLocation();
     const times = calculateSunTimes(loc.lat, loc.lng, now);
     return minutes < times.sunrise || minutes > times.sunset;
   } catch {
@@ -999,6 +1011,48 @@ function isNightTime() {
       minutes > THEME_CONFIG.fallback.sunset
     );
   }
+}
+
+async function refreshSunTimes(loc, dateKey) {
+  if (cachedSunTimesKey === dateKey || refreshSunTimes._pending === dateKey)
+    return;
+  refreshSunTimes._pending = dateKey;
+
+  try {
+    const url =
+      "https://api.open-meteo.com/v1/forecast?latitude=" +
+      loc.lat +
+      "&longitude=" +
+      loc.lng +
+      "&daily=sunrise,sunset&timezone=Australia%2FPerth&forecast_days=1";
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Sun times API failed");
+    const data = await response.json();
+
+    const sunriseISO = data.daily.sunrise[0];
+    const sunsetISO = data.daily.sunset[0];
+    const sunriseMinutes = isoTimeToMinutes(sunriseISO);
+    const sunsetMinutes = isoTimeToMinutes(sunsetISO);
+
+    cachedSunTimes = { sunrise: sunriseMinutes, sunset: sunsetMinutes };
+    cachedSunTimesKey = dateKey;
+
+    // Re-evaluate theme now that we have accurate live data
+    if ((localStorage.getItem("themeMode") || "auto") === "auto") {
+      applyThemeMode("auto");
+    }
+  } catch {
+    // Silently keep using the formula/fallback - already handled in isNightTime
+  } finally {
+    refreshSunTimes._pending = null;
+  }
+}
+
+function isoTimeToMinutes(isoString) {
+  // Open-Meteo returns local time like "2026-06-26T07:15" when timezone is specified
+  const timePart = isoString.split("T")[1];
+  const [h, m] = timePart.split(":").map(Number);
+  return h * 60 + m;
 }
 
 function calculateSunTimes(lat, lng, date) {
@@ -1116,6 +1170,37 @@ function showDay(dayNum) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function parseDurationToMinutes(durationStr) {
+  if (!durationStr) return 0;
+  let minutes = 0;
+  const hourMatch = durationStr.match(/(\d+(?:\.\d+)?)\s*h(?:ours?|r)?/i);
+  const minMatch = durationStr.match(/(\d+)\s*m(?:ins?|inutes?)?/i);
+  if (hourMatch) minutes += parseFloat(hourMatch[1]) * 60;
+  if (minMatch) minutes += parseInt(minMatch[1], 10);
+  return minutes;
+}
+
+function getClosingWarning(timeStr, durationStr, closesAtStr) {
+  if (!timeStr || !closesAtStr) return null;
+  const [startH, startM] = timeStr.split(":").map(Number);
+  const [closeH, closeM] = closesAtStr.split(":").map(Number);
+  const startMinutes = startH * 60 + startM;
+  const closeMinutes = closeH * 60 + closeM;
+  const durationMinutes = parseDurationToMinutes(durationStr);
+  const endMinutes = startMinutes + durationMinutes;
+
+  const closeTimeLabel = closesAtStr;
+
+  if (endMinutes > closeMinutes) {
+    const overBy = endMinutes - closeMinutes;
+    return `This stop closes at ${closeTimeLabel} — your planned visit runs about ${overBy} min past closing. Consider arriving earlier or shortening the stop.`;
+  }
+  if (closeMinutes - endMinutes <= 20) {
+    return `Closes at ${closeTimeLabel} — you'll be cutting it close. Don't linger too long here.`;
+  }
+  return null;
+}
+
 function createActivityCard(activity, activityId) {
   const card = document.createElement("div");
   card.className = "activity";
@@ -1160,6 +1245,16 @@ function createActivityCard(activity, activityId) {
     html += `<div class="inline-fact"><i class="fa-solid fa-circle-info"></i> ${escapeHTML(
       activity.fact
     )}</div>`;
+  }
+  if (activity.closesAt) {
+    const warning = getClosingWarning(
+      activity.time,
+      activity.duration,
+      activity.closesAt
+    );
+    if (warning) {
+      html += `<div class="inline-warning"><i class="fa-solid fa-triangle-exclamation"></i> ${warning}</div>`;
+    }
   }
   if (activity.address) {
     const mapUrl =
@@ -1447,6 +1542,7 @@ async function fetchWeather(dayNum) {
       <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
         <span>Feels ${feelsLike}°C</span>•<span><i class="fa-solid fa-wind"></i> ${wind} km/h</span>•<span><i class="fa-solid fa-umbrella"></i> ${rainChance}%</span>
       </div>`;
+    showWeatherNudge(rainChance, temp);
   } catch {
     const mockTemp = isDownSouth ? 14 : 18;
     weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
@@ -1459,171 +1555,30 @@ async function fetchWeather(dayNum) {
           mockTemp - 2
         }°C</span>•<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•<span><i class="fa-solid fa-umbrella"></i> 0%</span>
       </div>`;
+    hideWeatherNudge();
   }
 }
 
-function setupCurrencyWidget() {
-  const widget = document.getElementById("currencyWidget");
-  const toggle = document.getElementById("currencyToggle");
-  const closeBtn = document.getElementById("closeCurrency");
-  const sgdInput = document.getElementById("sgdInput");
-  const audInput = document.getElementById("audInput");
-  const swapBtn = document.getElementById("swapBtn");
-  const quickBtns = document.querySelectorAll(".quick-btn");
-  if (!widget || !toggle || !sgdInput || !audInput) return;
+function showWeatherNudge(rainChance, temp) {
+  const nudge = document.getElementById("weatherNudge");
+  if (!nudge) return;
 
-  let currentRate = 0;
-  let isReversed = false;
-
-  toggle.addEventListener("click", () => {
-    widget.classList.toggle("active");
-    if (widget.classList.contains("active") && currentRate === 0) fetchRate();
-  });
-
-  if (closeBtn)
-    closeBtn.addEventListener("click", () => widget.classList.remove("active"));
-  document.addEventListener("click", (e) => {
-    if (!widget.contains(e.target)) widget.classList.remove("active");
-  });
-
-  sgdInput.addEventListener("input", function () {
-    if (!isReversed)
-      audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
-  });
-
-  if (swapBtn) {
-    swapBtn.addEventListener("click", function () {
-      isReversed = !isReversed;
-      const labels = document.querySelectorAll(".currency-input-group label");
-
-      if (isReversed) {
-        sgdInput.setAttribute("readonly", "true");
-        audInput.removeAttribute("readonly");
-        labels.textContent = "Australian Dollar (AUD)";
-        labels.textContent = "Singapore Dollar (SGD)";
-        audInput.addEventListener("input", reverseConvert);
-      } else {
-        audInput.setAttribute("readonly", "true");
-        sgdInput.removeAttribute("readonly");
-        labels.textContent = "Singapore Dollar (SGD)";
-        labels.textContent = "Australian Dollar (AUD)";
-        audInput.removeEventListener("input", reverseConvert);
-        sgdInput.dispatchEvent(new Event("input"));
-      }
-    });
+  if (rainChance >= 50) {
+    nudge.style.display = "flex";
+    nudge.innerHTML = `<i class="fa-solid fa-umbrella"></i> <span><strong>${rainChance}% chance of rain today</strong> — pack the umbrella and a light rain jacket. Check today's activities for a wet-weather alternative.</span>`;
+    nudge.className = "weather-nudge weather-nudge-rain";
+  } else if (temp <= 10) {
+    nudge.style.display = "flex";
+    nudge.innerHTML = `<i class="fa-solid fa-temperature-low"></i> <span><strong>Cold day ahead (~${temp}°C)</strong> — layer up with a warm jacket, scarf, and gloves.</span>`;
+    nudge.className = "weather-nudge weather-nudge-cold";
+  } else {
+    hideWeatherNudge();
   }
-
-  function reverseConvert() {
-    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(
-      2
-    );
-  }
-
-  quickBtns.forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const amount = this.getAttribute("data-amount");
-      if (isReversed) {
-        audInput.value = amount;
-        audInput.dispatchEvent(new Event("input"));
-      } else {
-        sgdInput.value = amount;
-        sgdInput.dispatchEvent(new Event("input"));
-      }
-    });
-  });
-
-  function fetchRate() {
-    const rateDisplay = document.getElementById("exchangeRate");
-    const updatedDisplay = document.getElementById("lastUpdated");
-    if (rateDisplay) rateDisplay.textContent = "Loading...";
-    if (updatedDisplay) updatedDisplay.textContent = "Fetching rates...";
-
-    fetch("https://api.exchangerate-api.com/v4/latest/SGD")
-      .then((r) => r.json())
-      .then((data) => {
-        currentRate = data.rates.AUD;
-        if (rateDisplay)
-          rateDisplay.textContent =
-            "1 SGD = " + currentRate.toFixed(4) + " AUD";
-        if (updatedDisplay) {
-          updatedDisplay.textContent =
-            "Updated at " +
-            new Date().toLocaleTimeString("en-SG", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-        }
-        sgdInput.dispatchEvent(new Event("input"));
-      })
-      .catch(() => {
-        if (rateDisplay) rateDisplay.textContent = "Error loading rate";
-        if (updatedDisplay) updatedDisplay.textContent = "Please try again";
-      });
-  }
-
-  fetchRate();
-  setInterval(fetchRate, 300000);
 }
 
-async function fetchWeather(dayNum) {
-  const weatherDiv = document.getElementById("liveWeather");
-  if (!weatherDiv) return;
-
-  weatherDiv.style.flexDirection = "column";
-  weatherDiv.style.alignItems = "flex-start";
-  weatherDiv.style.gap = "0.25rem";
-  weatherDiv.innerHTML =
-    '<div style="display:flex;gap:0.5rem;align-items:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching weather...</div>';
-
-  const isDownSouth = dayNum <= 5;
-  const locationName = isDownSouth ? "Margaret River" : "Perth";
-
-  try {
-    const url =
-      "https://api.open-meteo.com/v1/forecast?latitude=" +
-      (isDownSouth ? -33.95 : -31.95) +
-      "&longitude=" +
-      (isDownSouth ? 115.08 : 115.86) +
-      "&current=temperature_2m,weather_code,apparent_temperature,wind_speed_10m&hourly=precipitation_probability&timezone=Australia%2FPerth&forecast_days=2";
-
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Weather API failed");
-    const data = await response.json();
-
-    const temp = Math.round(data.current.temperature_2m);
-    const code = data.current.weather_code;
-    const feelsLike = Math.round(data.current.apparent_temperature);
-    const wind = Math.round(data.current.wind_speed_10m);
-    const timeIndex = data.hourly.time.indexOf(data.current.time);
-    const rainChance =
-      timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
-
-    let icon = "fa-cloud";
-    if (code === 0) icon = "fa-sun";
-    else if (code >= 1 && code <= 3) icon = "fa-cloud-sun";
-    else if (code >= 45 && code <= 48) icon = "fa-smog";
-    else if (code >= 51 && code <= 67) icon = "fa-cloud-rain";
-    else if (code >= 71) icon = "fa-snowflake";
-
-    weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
-        <i class="fa-solid ${icon}"></i> ${temp}°C in ${locationName}
-      </div>
-      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
-        <span>Feels ${feelsLike}°C</span>•<span><i class="fa-solid fa-wind"></i> ${wind} km/h</span>•<span><i class="fa-solid fa-umbrella"></i> ${rainChance}%</span>
-      </div>`;
-  } catch {
-    const mockTemp = isDownSouth ? 14 : 18;
-    weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
-        <i class="fa-solid ${
-          isDownSouth ? "fa-cloud-sun" : "fa-sun"
-        }"></i> ~${mockTemp}°C in ${locationName}
-      </div>
-      <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
-        <span>Feels ~${
-          mockTemp - 2
-        }°C</span>•<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•<span><i class="fa-solid fa-umbrella"></i> 0%</span>
-      </div>`;
-  }
+function hideWeatherNudge() {
+  const nudge = document.getElementById("weatherNudge");
+  if (nudge) nudge.style.display = "none";
 }
 
 function setupCurrencyWidget() {
@@ -1732,6 +1687,7 @@ function setupFAB() {
   const fab = document.getElementById("fab");
   const fabBtn = document.getElementById("fabBtn");
   const jumpToday = document.getElementById("jumpToday");
+  const printDayBtn = document.getElementById("printDayBtn");
   const shareBtn = document.getElementById("shareBtn");
   const emergencyBtn = document.getElementById("emergencyBtn");
   const emergencyModal = document.getElementById("emergencyModal");
@@ -1757,6 +1713,13 @@ function setupFAB() {
       } else {
         alert("Trip not active yet or already ended");
       }
+      closeFAB();
+    });
+  }
+
+  if (printDayBtn) {
+    printDayBtn.addEventListener("click", function () {
+      printDaySheet(currentDay);
       closeFAB();
     });
   }
@@ -1820,6 +1783,94 @@ function setupFAB() {
 function closeFAB() {
   const fab = document.getElementById("fab");
   if (fab) fab.classList.remove("active");
+}
+
+function printDaySheet(dayNum) {
+  const dayData = tripData.find((d) => d.day === dayNum);
+  if (!dayData) return;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Please allow pop-ups to print the day sheet.");
+    return;
+  }
+
+  const rows = dayData.activities
+    .map((activity) => {
+      const tagLabel =
+        activity.tag === "laundry"
+          ? "Laundry"
+          : activity.tag === "exercise"
+          ? "Exercise"
+          : activity.tag === "booking"
+          ? "Booking"
+          : "Activity";
+      const closingNote = activity.closesAt
+        ? ` (closes ${activity.closesAt})`
+        : "";
+      return `
+        <tr>
+          <td class="time-cell">${activity.time}</td>
+          <td>
+            <strong>${escapeHTML(activity.desc)}</strong>
+            <span class="tag-cell">${tagLabel}</span><br/>
+            ${
+              activity.address
+                ? `<span class="addr-cell">${escapeHTML(
+                    activity.address
+                  )}${closingNote}</span><br/>`
+                : ""
+            }
+            ${
+              activity.duration
+                ? `<span class="dur-cell">Duration: ${activity.duration}</span><br/>`
+                : ""
+            }
+            ${
+              activity.tip
+                ? `<span class="tip-cell">Tip: ${escapeHTML(
+                    activity.tip
+                  )}</span>`
+                : ""
+            }
+          </td>
+        </tr>`;
+    })
+    .join("");
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8" />
+      <title>Day ${dayNum} - ${escapeHTML(dayData.title)}</title>
+      <style>
+        body { font-family: -apple-system, Arial, sans-serif; color: #1a1a1a; padding: 2rem; max-width: 700px; margin: 0 auto; }
+        h1 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+        h2 { font-size: 1rem; color: #555; margin-top: 0; font-weight: 500; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        td { padding: 0.6rem 0.4rem; border-bottom: 1px solid #ddd; vertical-align: top; font-size: 0.85rem; }
+        .time-cell { font-weight: 700; white-space: nowrap; width: 60px; }
+        .tag-cell { font-size: 0.7rem; text-transform: uppercase; color: #777; margin-left: 0.5rem; }
+        .addr-cell { color: #555; }
+        .dur-cell { color: #888; font-size: 0.8rem; }
+        .tip-cell { color: #2563eb; font-size: 0.8rem; }
+        @media print {
+          body { padding: 0.5rem; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Perth Trip 2026 — Day ${dayNum}</h1>
+      <h2>${escapeHTML(dayData.date)} · ${escapeHTML(dayData.title)}</h2>
+      <table>${rows}</table>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.onload = () => {
+    printWindow.print();
+  };
 }
 
 function setupTripInfo() {
