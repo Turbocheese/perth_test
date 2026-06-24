@@ -1,6 +1,8 @@
 // Service Worker for Perth Trip 2026
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v4";
 const CACHE_NAME = `perth-trip-${CACHE_VERSION}`;
+const TILE_CACHE_NAME = "perth-trip-map-tiles"; // not version-tied - tiles persist across app updates
+const MAX_TILES = 600; // ~enough for the whole MR-to-Perth route at a few zoom levels
 
 // Core app shell - cached eagerly on install
 const APP_SHELL = [
@@ -16,7 +18,12 @@ const APP_SHELL = [
 ];
 
 // Live data APIs - always try the network first, fall back to cache
-const NETWORK_FIRST_HOSTS = ["api.open-meteo.com", "api.exchangerate-api.com"];
+const NETWORK_FIRST_HOSTS = ["api.open-meteo.com", "open.er-api.com"];
+
+// Map tile hosts (OpenStreetMap uses a/b/c subdomains)
+function isTileRequest(url) {
+  return /^[abc]\.tile\.openstreetmap\.org$/.test(url.hostname);
+}
 
 // Install - cache the app shell
 self.addEventListener("install", function (event) {
@@ -45,6 +52,11 @@ self.addEventListener("fetch", function (event) {
   // Only handle GET requests; let everything else pass through
   if (event.request.method !== "GET") return;
 
+  if (isTileRequest(requestUrl)) {
+    event.respondWith(tileCacheFirst(event.request));
+    return;
+  }
+
   if (NETWORK_FIRST_HOSTS.includes(requestUrl.hostname)) {
     event.respondWith(networkFirst(event.request));
     return;
@@ -52,6 +64,41 @@ self.addEventListener("fetch", function (event) {
 
   event.respondWith(staleWhileRevalidate(event.request));
 });
+
+// Map tiles rarely change, so once a tile has been viewed (with signal),
+// serve it from cache forever after - this is what makes the map usable
+// offline once you've panned around the route while you had connectivity.
+async function tileCacheFirst(request) {
+  const cache = await caches.open(TILE_CACHE_NAME);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      await cache.put(request, response.clone());
+      trimTileCache(cache);
+    }
+    return response;
+  } catch (err) {
+    // No tile cached and no network - return nothing, Leaflet will show a blank tile
+    return new Response("", {
+      status: 503,
+      statusText: "Offline - tile not cached",
+    });
+  }
+}
+
+async function trimTileCache(cache) {
+  const keys = await cache.keys();
+  if (keys.length > MAX_TILES) {
+    // Evict oldest entries first (cache.keys() returns insertion order)
+    const excess = keys.length - MAX_TILES;
+    for (let i = 0; i < excess; i++) {
+      await cache.delete(keys[i]);
+    }
+  }
+}
 
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
@@ -107,13 +154,13 @@ async function staleWhileRevalidate(request) {
   return new Response("", { status: 503, statusText: "Offline" });
 }
 
-// Activate - clean old caches
+// Activate - clean old caches (but keep the map tile cache across versions)
 self.addEventListener("activate", function (event) {
   event.waitUntil(
     caches.keys().then(function (cacheNames) {
       return Promise.all(
         cacheNames.map(function (cacheName) {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== TILE_CACHE_NAME) {
             console.log("🗑️ Deleting old cache:", cacheName);
             return caches.delete(cacheName);
           }

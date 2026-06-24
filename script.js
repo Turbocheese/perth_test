@@ -1343,18 +1343,30 @@ function getCheckboxState(id) {
 function startCountdown() {
   const countdown = document.getElementById("countdown");
   if (!countdown) return;
-  const tripStart = new Date("June 26, 2026 09:00:00").getTime();
+  const tripStartDate = new Date(2026, 5, 26); // June 26, 2026 - local midnight
+  tripStartDate.setHours(0, 0, 0, 0);
 
   function update() {
-    const diff = tripStart - Date.now();
-    if (diff < 0) {
+    const now = new Date();
+    const todayMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+    const diffDays = Math.round(
+      (tripStartDate - todayMidnight) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffDays < 0) {
       countdown.innerHTML = '<i class="fa-solid fa-plane"></i> Trip Started!';
-      return;
+    } else if (diffDays === 0) {
+      countdown.innerHTML =
+        '<i class="fa-solid fa-plane-departure"></i> Departing today!';
+    } else {
+      countdown.innerHTML = `<i class="fa-solid fa-calendar"></i> ${diffDays} day${
+        diffDays !== 1 ? "s" : ""
+      } until departure`;
     }
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    countdown.innerHTML = `<i class="fa-solid fa-calendar"></i> ${days} day${
-      days !== 1 ? "s" : ""
-    } until departure`;
   }
 
   update();
@@ -1683,7 +1695,7 @@ function setupCurrencyWidget() {
     if (rateDisplay) rateDisplay.textContent = "Loading...";
     if (updatedDisplay) updatedDisplay.textContent = "Fetching rates...";
 
-    fetch("https://api.exchangerate-api.com/v4/latest/SGD")
+    fetch("https://open.er-api.com/v6/latest/SGD")
       .then((r) => r.json())
       .then((data) => {
         currentRate = data.rates.AUD;
@@ -2009,12 +2021,21 @@ function initMap() {
 }
 
 function createMap() {
-  map = L.map("tripMap").setView([-32.5, 115.8], 8);
+  map = L.map("tripMap", { attributionControl: false }).setView(
+    [-32.5, 115.8],
+    8
+  );
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors",
     maxZoom: 18,
   }).addTo(map);
+
+  // Plain, non-clickable attribution text - avoids Leaflet's default
+  // attribution link out to openstreetmap.org
+  L.control
+    .attribution({ prefix: false })
+    .addAttribution("Map data \u00A9 OpenStreetMap contributors")
+    .addTo(map);
 
   renderFilteredMap("all");
 }
