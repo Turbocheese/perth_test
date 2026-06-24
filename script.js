@@ -547,6 +547,7 @@ const tripDataPart2 = [
         address: "22-24 Clayton St, Bellevue WA 6056",
         tag: "activity",
         duration: "45 mins",
+        closesAt: "16:00",
         tip: "Eclectic and quirky. Great for jewelry, homewares, and random nostalgic finds.",
       },
       {
@@ -555,6 +556,7 @@ const tripDataPart2 = [
         address: "189 James St, Guildford WA 6055",
         tag: "activity",
         duration: "50 mins",
+        closesAt: "16:30",
         tip: "Guildford is Perth's main antique hub. Lots of convict history in these streets.",
       },
       {
