@@ -131,6 +131,8 @@ header > * {
   z-index: 1;
 }
 
+
+
 .label {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -540,12 +542,22 @@ h2 {
 .activity {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1.75rem;
   box-shadow: var(--shadow-sm);
   position: relative;
   margin-left: 60px;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.activity-type-booking {
+  border-left-color: var(--accent-1);
+}
+.activity-type-laundry {
+  border-left-color: var(--accent-4);
+}
+.activity-type-exercise {
+  border-left-color: var(--accent-3);
 }
 .activity::before {
   content: "";
@@ -587,7 +599,7 @@ h2 {
   letter-spacing: 0.1em;
   font-weight: 700;
   padding: 0.3rem 0.8rem;
-  border-radius: 4px;
+  border-radius: 50px;
 }
 .tag-activity {
   background: var(--bg-primary);
@@ -953,31 +965,28 @@ body.popup-open .next-activity-timer {
   margin-bottom: 1rem;
 }
 .exchange-rate {
-  background: var(--bg-primary);
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   padding: 1.25rem;
   border-radius: var(--radius-sm);
   margin-bottom: 1.5rem;
-  border: 1px solid var(--border);
+  border: none;
 }
 .rate-label {
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 .rate-value {
   font-size: 1.6rem;
   font-weight: 600;
-  color: var(--accent-1);
+  color: white;
   margin-bottom: 0.25rem;
-}
-[data-theme="dark"] .rate-value {
-  color: var(--accent-3);
 }
 .rate-updated {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
 }
 .converter-row {
   display: flex;
@@ -1002,6 +1011,12 @@ body.popup-open .next-activity-timer {
   font-size: 1rem;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.currency-input-group input:focus {
+  outline: none;
+  border-color: var(--accent-3);
+  box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.18);
 }
 .currency-input-group input[readonly] {
   background: var(--bg-primary);
@@ -1034,9 +1049,11 @@ body.popup-open .next-activity-timer {
   padding: 0.6rem;
   background: var(--bg-primary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 50px;
   cursor: pointer;
   color: var(--text-primary);
+  font-weight: 600;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 /* ===== MODALS ===== */
@@ -1135,29 +1152,39 @@ body.popup-open .next-activity-timer {
 .highlight-card h4 {
   color: var(--accent-3);
 }
-.emergency-item {
-  margin-bottom: 1.25rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
+.emergency-card {
+  background: rgba(229, 62, 62, 0.06);
+  border-color: rgba(229, 62, 62, 0.25);
 }
-.emergency-item:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+.emergency-card h4 {
+  color: #e53e3e;
 }
-.emergency-item strong {
-  display: block;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 0.4rem;
-}
-.emergency-item a,
-.emergency-item span {
-  font-size: 1.2rem;
+.emergency-card a {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-primary);
   text-decoration: none;
+}
+
+.vault-section-title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 1.75rem 0 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vault-section-title:first-child {
+  margin-top: 0;
+}
+.vault-section-title i {
+  color: var(--accent-3);
+}
+.vault-section-title-emergency i {
+  color: #e53e3e;
 }
 /* ===== MAP MODAL & CONTROLS ===== */
 .map-modal-content {
@@ -1284,7 +1311,9 @@ body.popup-open .next-activity-timer {
   }
   .activity:hover {
     transform: translateY(-2px);
-    border-color: var(--accent-4);
+    border-top-color: var(--accent-4);
+    border-right-color: var(--accent-4);
+    border-bottom-color: var(--accent-4);
   }
   .activity:hover::before {
     background: var(--accent-2);
@@ -1416,7 +1445,7 @@ body.popup-open .next-activity-timer {
 .touch-device .scroll-to-top:hover,
 .touch-device .close-modal:hover,
 .touch-device .search-result-item:hover,
-.touch-device .emergency-item a:hover,
+.touch-device .emergency-card a:hover,
 .touch-device .info-card a:hover,
 .touch-device .swap-btn:hover {
   transform: none !important;

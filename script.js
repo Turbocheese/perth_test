@@ -1209,20 +1209,24 @@ function getClosingWarning(timeStr, durationStr, closesAtStr) {
 
 function createActivityCard(activity, activityId) {
   const card = document.createElement("div");
-  card.className = "activity";
 
   let tagLabel = "Activity";
   let tagClass = "tag-activity";
+  let cardTypeClass = "activity-type-activity";
   if (activity.tag === "laundry") {
     tagLabel = "Laundry";
     tagClass = "tag-laundry";
+    cardTypeClass = "activity-type-laundry";
   } else if (activity.tag === "exercise") {
     tagLabel = "Exercise";
     tagClass = "tag-exercise";
+    cardTypeClass = "activity-type-exercise";
   } else if (activity.tag === "booking") {
     tagLabel = "Booking";
     tagClass = "tag-booking";
+    cardTypeClass = "activity-type-booking";
   }
+  card.className = "activity " + cardTypeClass;
 
   const isChecked = getCheckboxState(activityId);
 
@@ -1729,9 +1733,12 @@ function setupMoreMenu() {
   const jumpToday = document.getElementById("jumpToday");
   const printDayBtn = document.getElementById("printDayBtn");
   const shareBtn = document.getElementById("shareBtn");
-  const emergencyBtn = document.getElementById("emergencyBtn");
-  const emergencyModal = document.getElementById("emergencyModal");
-  const closeEmergency = document.getElementById("closeEmergency");
+  const goHomeMR = document.getElementById("goHomeMR");
+  const goHomePerth = document.getElementById("goHomePerth");
+
+  const MARGARET_RIVER_ADDRESS =
+    "Apartment #4, 16 Town View Terrace, Margaret River WA 6285";
+  const PERTH_ADDRESS = "15B Esperance St, East Victoria Park WA 6101";
 
   if (!moreBtn || !moreMenu) return;
 
@@ -1741,6 +1748,20 @@ function setupMoreMenu() {
     moreBtn.classList.toggle("active");
     updatePopupOpenState();
   });
+
+  if (goHomeMR) {
+    goHomeMR.addEventListener("click", function () {
+      openMapsTo(MARGARET_RIVER_ADDRESS);
+      closeMoreMenu();
+    });
+  }
+
+  if (goHomePerth) {
+    goHomePerth.addEventListener("click", function () {
+      openMapsTo(PERTH_ADDRESS);
+      closeMoreMenu();
+    });
+  }
 
   if (jumpToday) {
     jumpToday.addEventListener("click", function () {
@@ -1793,30 +1814,6 @@ function setupMoreMenu() {
     });
   }
 
-  if (emergencyBtn && emergencyModal) {
-    emergencyBtn.addEventListener("click", function () {
-      emergencyModal.classList.add("active");
-      document.body.style.overflow = "hidden";
-      closeMoreMenu();
-    });
-  }
-
-  if (closeEmergency && emergencyModal) {
-    closeEmergency.addEventListener("click", function () {
-      emergencyModal.classList.remove("active");
-      document.body.style.overflow = "";
-    });
-  }
-
-  if (emergencyModal) {
-    emergencyModal.addEventListener("click", function (e) {
-      if (e.target === emergencyModal) {
-        emergencyModal.classList.remove("active");
-        document.body.style.overflow = "";
-      }
-    });
-  }
-
   document.addEventListener("click", function (e) {
     if (
       moreMenu &&
@@ -1826,6 +1823,35 @@ function setupMoreMenu() {
       closeMoreMenu();
     }
   });
+}
+
+// Opens Google Maps with directions pre-filled to the given destination.
+// Uses the device's current GPS location as the starting point when
+// permission is available, otherwise lets Google Maps fall back to
+// "your location" automatically.
+function openMapsTo(destinationAddress) {
+  const destination = encodeURIComponent(destinationAddress);
+
+  function openWithOrigin(originParam) {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving${originParam}`;
+    window.open(url, "_blank");
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        const origin = `${position.coords.latitude},${position.coords.longitude}`;
+        openWithOrigin("&origin=" + encodeURIComponent(origin));
+      },
+      function () {
+        // Permission denied or unavailable - Google Maps will use its own location detection
+        openWithOrigin("");
+      },
+      { timeout: 5000 }
+    );
+  } else {
+    openWithOrigin("");
+  }
 }
 
 function closeMoreMenu() {

@@ -168,8 +168,11 @@
       <button class="more-option" id="shareBtn">
         <i class="fa-solid fa-share-nodes"></i> Share
       </button>
-      <button class="more-option" id="emergencyBtn" style="color: #e53e3e">
-        <i class="fa-solid fa-triangle-exclamation"></i> Emergency Info
+      <button class="more-option" id="goHomeMR">
+        <i class="fa-solid fa-house"></i> Go Home (Margaret River)
+      </button>
+      <button class="more-option" id="goHomePerth">
+        <i class="fa-solid fa-house"></i> Go Home (Perth City)
       </button>
     </div>
 
@@ -183,9 +186,13 @@
         <i class="fa-solid fa-dollar-sign"></i>
         <span>Currency</span>
       </button>
-      <button class="toolbar-btn" id="tripInfoBtn" aria-label="Trip info">
-        <i class="fa-solid fa-suitcase-rolling"></i>
-        <span>Trip Info</span>
+      <button
+        class="toolbar-btn"
+        id="tripInfoBtn"
+        aria-label="Bookings and numbers"
+      >
+        <i class="fa-solid fa-vault"></i>
+        <span>Bookings</span>
       </button>
       <button
         class="toolbar-btn"
@@ -205,27 +212,93 @@
     <div class="modal-overlay" id="tripInfoModal">
       <div class="modal-content info-modal-content">
         <div class="modal-header">
-          <h3><i class="fa-solid fa-suitcase-rolling"></i> Trip Info</h3>
+          <h3><i class="fa-solid fa-vault"></i> Bookings &amp; Numbers</h3>
           <button class="close-modal" id="closeTripInfo">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
         <div class="modal-body">
+          <h4 class="vault-section-title vault-section-title-emergency">
+            <i class="fa-solid fa-triangle-exclamation"></i> Emergency Numbers
+          </h4>
+          <div class="info-grid">
+            <div class="info-card emergency-card">
+              <h4><i class="fa-solid fa-phone"></i> AU Emergency</h4>
+              <p><a href="tel:000">000</a></p>
+            </div>
+            <div class="info-card emergency-card">
+              <h4>
+                <i class="fa-solid fa-car-burst"></i> H20 Rentals Breakdown
+              </h4>
+              <p>
+                Steven Yii<br /><a href="tel:+61490438035">+61 490 438035</a>
+              </p>
+            </div>
+            <div class="info-card emergency-card">
+              <h4>
+                <i class="fa-solid fa-shield-heart"></i> Singlife Travel
+                Insurance
+              </h4>
+              <p>
+                Policy #60318431<br /><a href="tel:+6564609391"
+                  >+65 6460 9391</a
+                >
+              </p>
+            </div>
+          </div>
+
+          <h4 class="vault-section-title">
+            <i class="fa-solid fa-plane"></i> Flights
+          </h4>
           <div class="info-grid">
             <div class="info-card">
-              <h4>Car Rental</h4>
-              <p>
-                <strong>H20 Car Rentals</strong><br />Kia Carnival<br />Booking:
-                #3761<br />Steven Yii: +61 490 438035
-              </p>
+              <h4>Scoot TR8 (SIN → PER)</h4>
+              <p>Booking: BYLSMW<br />Seats: 17K, 17J, 17H, 18J, 18H</p>
             </div>
             <div class="info-card">
-              <h4>Flights</h4>
+              <h4>Scoot TR17 (PER → SIN)</h4>
+              <p>Booking: GB3MMW<br />Seats: 17A, 17B, 17C, 18B, 18C</p>
+            </div>
+          </div>
+
+          <h4 class="vault-section-title">
+            <i class="fa-solid fa-car"></i> Car Rental
+          </h4>
+          <div class="info-grid">
+            <div class="info-card">
+              <h4>H20 Car Rentals</h4>
               <p>
-                Scoot TR8 (SIN→PER)<br />Scoot TR17 (PER→SIN)<br />Booking:
-                BYLSMW &amp; GB3MMW
+                Kia Carnival<br />Booking: #3761<br />Steven Yii: +61 490 438035
               </p>
             </div>
+          </div>
+
+          <h4 class="vault-section-title">
+            <i class="fa-solid fa-utensils"></i> Restaurant Bookings
+          </h4>
+          <div class="info-grid">
+            <div class="info-card">
+              <h4>Wild Hop Brewing Co.</h4>
+              <p>Table for 5<br />Booking Ref: 89891601</p>
+            </div>
+            <div class="info-card">
+              <h4>Swings &amp; Roundabouts</h4>
+              <p>Table for 5<br />Confirmation #84688184</p>
+            </div>
+            <div class="info-card">
+              <h4>Burger Baby</h4>
+              <p>Table for 5<br />Confirmation #2755498</p>
+            </div>
+            <div class="info-card">
+              <h4>Salt &amp; Pepper Grill</h4>
+              <p>Table for 5<br />Confirmation #161942350</p>
+            </div>
+          </div>
+
+          <h4 class="vault-section-title">
+            <i class="fa-solid fa-circle-info"></i> Trip Notes
+          </h4>
+          <div class="info-grid">
             <div class="info-card highlight-card">
               <h4><i class="fa-solid fa-cloud-moon"></i> Winter Profile</h4>
               <p>
@@ -233,13 +306,6 @@
                   >Sunrise:</strong
                 >
                 ~7:15 AM<br /><strong>Sunset:</strong> ~5:20 PM
-              </p>
-            </div>
-            <div class="info-card">
-              <h4>Travel Insurance</h4>
-              <p>
-                <strong>Singlife Travel Insurance</strong><br />Policy
-                #60318431<br /><a href="tel:+6564609391">+65 6460 9391</a>
               </p>
             </div>
             <div class="info-card highlight-card">
@@ -252,37 +318,6 @@
                 beans and check before taking any medication
               </p>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-overlay" id="emergencyModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3><i class="fa-solid fa-truck-medical"></i> Emergency Contacts</h3>
-          <button class="close-modal" id="closeEmergency">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="emergency-item">
-            <strong><i class="fa-solid fa-phone"></i> AU Emergency</strong>
-            <a href="tel:000">000</a>
-          </div>
-          <div class="emergency-item">
-            <strong
-              ><i class="fa-solid fa-car-burst"></i> H20 Car Rentals
-              Breakdown</strong
-            >
-            <a href="tel:+61490438035">+61 490 438035</a>
-          </div>
-          <div class="emergency-item">
-            <strong
-              ><i class="fa-solid fa-shield-heart"></i> Singlife Travel
-              Insurance (Policy #60318431)</strong
-            >
-            <a href="tel:+6564609391">+65 6460 9391</a>
           </div>
         </div>
       </div>
