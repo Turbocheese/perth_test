@@ -36,7 +36,7 @@
     <header>
       <span class="label">Family Trip</span>
       <h1>Perth 2026</h1>
-      <p class="subtitle">26 June - 5 July</p>
+      <p class="subtitle">26 June - 05 July</p>
       <div class="countdown" id="countdown">Loading...</div>
       <button
         class="theme-toggle"
@@ -178,28 +178,15 @@
 
     <!-- Unified bottom toolbar -->
     <nav class="bottom-toolbar" id="bottomToolbar">
-      <button
-        class="toolbar-btn"
-        id="currencyToggle"
-        aria-label="Currency converter"
-      >
+      <button class="toolbar-btn" id="currencyToggle" aria-label="Currency converter">
         <i class="fa-solid fa-dollar-sign"></i>
         <span>Currency</span>
       </button>
-      <button
-        class="toolbar-btn"
-        id="tripInfoBtn"
-        aria-label="Bookings and numbers"
-      >
+      <button class="toolbar-btn" id="tripInfoBtn" aria-label="Bookings and numbers">
         <i class="fa-solid fa-vault"></i>
         <span>Bookings</span>
       </button>
-      <button
-        class="toolbar-btn"
-        id="mapBtn"
-        aria-label="View map"
-        onclick="openMap()"
-      >
+      <button class="toolbar-btn" id="mapBtn" aria-label="View map" onclick="openMap()">
         <i class="fa-solid fa-map-location-dot"></i>
         <span>Map</span>
       </button>
@@ -227,23 +214,12 @@
               <p><a href="tel:000">000</a></p>
             </div>
             <div class="info-card emergency-card">
-              <h4>
-                <i class="fa-solid fa-car-burst"></i> H20 Rentals Breakdown
-              </h4>
-              <p>
-                Steven Yii<br /><a href="tel:+61490438035">+61 490 438035</a>
-              </p>
+              <h4><i class="fa-solid fa-car-burst"></i> H20 Rentals Breakdown</h4>
+              <p>Steven Yii<br /><a href="tel:+61490438035">+61 490 438035</a></p>
             </div>
             <div class="info-card emergency-card">
-              <h4>
-                <i class="fa-solid fa-shield-heart"></i> Singlife Travel
-                Insurance
-              </h4>
-              <p>
-                Policy #60318431<br /><a href="tel:+6564609391"
-                  >+65 6460 9391</a
-                >
-              </p>
+              <h4><i class="fa-solid fa-shield-heart"></i> Singlife Travel Insurance</h4>
+              <p>Policy #60318431<br /><a href="tel:+6564609391">+65 6460 9391</a></p>
             </div>
           </div>
 
@@ -267,9 +243,7 @@
           <div class="info-grid">
             <div class="info-card">
               <h4>H20 Car Rentals</h4>
-              <p>
-                Kia Carnival<br />Booking: #3761<br />Steven Yii: +61 490 438035
-              </p>
+              <p>Kia Carnival<br />Booking: #3761<br />Steven Yii: +61 490 438035</p>
             </div>
           </div>
 
@@ -309,13 +283,11 @@
               </p>
             </div>
             <div class="info-card highlight-card">
-              <h4>
-                <i class="fa-solid fa-utensils"></i> Dietary &amp; Allergy Notes
-              </h4>
+              <h4><i class="fa-solid fa-utensils"></i> Dietary &amp; Allergy Notes</h4>
               <p>
                 <strong>Ceci:</strong> cannot eat squid<br />
-                <strong>Russ:</strong> has G6PD deficiency (favism) — avoid fava
-                beans and check before taking any medication
+                <strong>Russ:</strong> has G6PD deficiency (favism) — avoid
+                fava beans and check before taking any medication
               </p>
             </div>
           </div>
@@ -334,10 +306,10 @@
         </div>
 
         <div class="map-controls">
+          <button class="map-nav-btn" id="mapPrevDay" aria-label="Previous day">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
           <select id="mapFilterSelect" class="map-day-select">
-            <option value="all">All Days</option>
-            <option value="1-5">Days 1–5</option>
-            <option value="6-11">Days 6–11</option>
             <option value="day-1">Day 1</option>
             <option value="day-2">Day 2</option>
             <option value="day-3">Day 3</option>
@@ -349,7 +321,19 @@
             <option value="day-9">Day 9</option>
             <option value="day-10">Day 10</option>
             <option value="day-11">Day 11</option>
+            <option value="1-5">Margaret River overview (Days 1–5)</option>
+            <option value="6-11">Perth overview (Days 6–11)</option>
+            <option value="all">Whole trip overview</option>
           </select>
+          <button class="map-nav-btn" id="mapNextDay" aria-label="Next day">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="map-legend">
+          <span><i class="fa-solid fa-circle map-legend-dot map-legend-booking"></i> Booking</span>
+          <span><i class="fa-solid fa-circle map-legend-dot map-legend-exercise"></i> Exercise</span>
+          <span><i class="fa-solid fa-circle map-legend-dot map-legend-laundry"></i> Laundry</span>
+          <span><i class="fa-solid fa-circle map-legend-dot map-legend-activity"></i> Other</span>
         </div>
 
         <div class="modal-body" style="padding: 0; height: 70vh">

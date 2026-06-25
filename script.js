@@ -87,8 +87,7 @@ const tripData = [
         tag: "activity",
         duration: "1.5 hours",
         tip: "Arrive early for the best artisan pastries. Bring cash just in case.",
-        wetWeatherAlt:
-          "If it's raining, skip the market picnic prep and head straight towards Cape Leeuwin instead — stop at Augusta Bakery, 121 Blackwood Ave, Augusta, for a quick pie lunch around 10:45am.",
+        wetWeatherAlt: "If it's raining, skip the market picnic prep and head straight towards Cape Leeuwin instead — stop at Augusta Bakery, 121 Blackwood Ave, Augusta, for a quick pie lunch around 10:45am.",
       },
       {
         time: "10:30",
@@ -97,8 +96,7 @@ const tripData = [
         tag: "activity",
         duration: "3 hours",
         tip: "It's the point where the Indian and Southern Oceans meet. Very windy—layer up!",
-        wetWeatherAlt:
-          "If it's raining when you arrive, skip the Lighthouse and go straight to Jewel Cave instead.",
+        wetWeatherAlt: "If it's raining when you arrive, skip the Lighthouse and go straight to Jewel Cave instead.",
       },
       {
         time: "13:30",
@@ -1020,16 +1018,12 @@ function isNightTime() {
 }
 
 async function refreshSunTimes(loc, dateKey) {
-  if (cachedSunTimesKey === dateKey || refreshSunTimes._pending === dateKey)
-    return;
+  if (cachedSunTimesKey === dateKey || refreshSunTimes._pending === dateKey) return;
   refreshSunTimes._pending = dateKey;
 
   try {
-    const url =
-      "https://api.open-meteo.com/v1/forecast?latitude=" +
-      loc.lat +
-      "&longitude=" +
-      loc.lng +
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" +
+      loc.lat + "&longitude=" + loc.lng +
       "&daily=sunrise,sunset&timezone=Australia%2FPerth&forecast_days=1";
     const response = await fetch(url);
     if (!response.ok) throw new Error("Sun times API failed");
@@ -1119,7 +1113,7 @@ function createDayTabs() {
   if (!tabsContainer) return;
   tabsContainer.innerHTML = "";
 
-  tripData.forEach((day) => {
+  tripData.forEach(day => {
     const tab = document.createElement("button");
     tab.className = "tab";
     tab.innerHTML = `<span>Day ${day.day}</span>`;
@@ -1135,25 +1129,19 @@ function showDay(dayNum) {
   document.querySelectorAll(".tab").forEach((tab, index) => {
     if (index + 1 === dayNum) {
       tab.classList.add("active");
-      tab.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
+      tab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
     } else {
       tab.classList.remove("active");
     }
   });
 
-  const dayData = tripData.find((d) => d.day === dayNum);
+  const dayData = tripData.find(d => d.day === dayNum);
   if (!dayData) return;
 
   document.getElementById("currentDate").textContent = dayData.date;
   document.getElementById("currentTitle").textContent = dayData.title;
   document.getElementById("insightText").textContent = dayData.fact;
-  document.getElementById(
-    "insightIcon"
-  ).innerHTML = `<i class="fa-solid ${dayData.icon}"></i>`;
+  document.getElementById("insightIcon").innerHTML = `<i class="fa-solid ${dayData.icon}"></i>`;
 
   const timeline = document.getElementById("timeline");
   timeline.innerHTML = "";
@@ -1165,9 +1153,7 @@ function showDay(dayNum) {
     timeline.appendChild(card);
     allActivities.push({
       element: card,
-      text: `${activity.desc} ${activity.address || ""} ${activity.tip || ""} ${
-        activity.fact || ""
-      }`.toLowerCase(),
+      text: `${activity.desc} ${activity.address || ""} ${activity.tip || ""} ${activity.fact || ""}`.toLowerCase()
     });
   });
 
@@ -1234,9 +1220,7 @@ function createActivityCard(activity, activityId) {
     <div class="activity-header">
       <div class="time">${activity.time}</div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <input type="checkbox" class="activity-checkbox" id="${activityId}" ${
-    isChecked ? "checked" : ""
-  } />
+        <input type="checkbox" class="activity-checkbox" id="${activityId}" ${isChecked ? "checked" : ""} />
         <div class="tag ${tagClass}">${tagLabel}</div>
       </div>
     </div>
@@ -1247,42 +1231,28 @@ function createActivityCard(activity, activityId) {
     html += `<div class="duration"><i class="fa-regular fa-clock"></i> ${activity.duration}</div>`;
   }
   if (activity.tip) {
-    html += `<div class="inline-tip"><i class="fa-solid fa-lightbulb"></i> ${escapeHTML(
-      activity.tip
-    )}</div>`;
+    html += `<div class="inline-tip"><i class="fa-solid fa-lightbulb"></i> ${escapeHTML(activity.tip)}</div>`;
   }
   if (activity.fact) {
-    html += `<div class="inline-fact"><i class="fa-solid fa-circle-info"></i> ${escapeHTML(
-      activity.fact
-    )}</div>`;
+    html += `<div class="inline-fact"><i class="fa-solid fa-circle-info"></i> ${escapeHTML(activity.fact)}</div>`;
   }
   if (activity.closesAt) {
-    const warning = getClosingWarning(
-      activity.time,
-      activity.duration,
-      activity.closesAt
-    );
+    const warning = getClosingWarning(activity.time, activity.duration, activity.closesAt);
     if (warning) {
       html += `<div class="inline-warning"><i class="fa-solid fa-triangle-exclamation"></i> ${warning}</div>`;
     }
   }
   if (activity.wetWeatherAlt) {
-    html += `<div class="inline-wet-alt"><i class="fa-solid fa-cloud-rain"></i> <strong>If it rains:</strong> ${escapeHTML(
-      activity.wetWeatherAlt
-    )}</div>`;
+    html += `<div class="inline-wet-alt"><i class="fa-solid fa-cloud-rain"></i> <strong>If it rains:</strong> ${escapeHTML(activity.wetWeatherAlt)}</div>`;
   }
   if (activity.address) {
-    const mapUrl =
-      "https://www.google.com/maps/search/?api=1&query=" +
-      encodeURIComponent(activity.address);
+    const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(activity.address);
     html += `
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
         <a href="${mapUrl}" target="_blank" rel="noopener" class="map-link">
           <i class="fa-solid fa-location-dot"></i> Open Map
         </a>
-        <button class="map-link copy-address-btn" data-address="${escapeHTML(
-          activity.address
-        )}" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);">
+        <button class="map-link copy-address-btn" data-address="${escapeHTML(activity.address)}" style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);">
           <i class="fa-regular fa-copy"></i> Copy
         </button>
       </div>
@@ -1354,24 +1324,15 @@ function startCountdown() {
 
   function update() {
     const now = new Date();
-    const todayMidnight = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const diffDays = Math.round(
-      (tripStartDate - todayMidnight) / (1000 * 60 * 60 * 24)
-    );
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((tripStartDate - todayMidnight) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
       countdown.innerHTML = '<i class="fa-solid fa-plane"></i> Trip Started!';
     } else if (diffDays === 0) {
-      countdown.innerHTML =
-        '<i class="fa-solid fa-plane-departure"></i> Departing today!';
+      countdown.innerHTML = '<i class="fa-solid fa-plane-departure"></i> Departing today!';
     } else {
-      countdown.innerHTML = `<i class="fa-solid fa-calendar"></i> ${diffDays} day${
-        diffDays !== 1 ? "s" : ""
-      } until departure`;
+      countdown.innerHTML = `<i class="fa-solid fa-calendar"></i> ${diffDays} day${diffDays !== 1 ? "s" : ""} until departure`;
     }
   }
 
@@ -1388,7 +1349,7 @@ function setupSearch() {
 
   let timer;
 
-  searchBox.addEventListener("input", (e) => {
+  searchBox.addEventListener("input", e => {
     clearTimeout(timer);
     const query = e.target.value.trim();
     if (clearBtn) clearBtn.style.display = query ? "block" : "none";
@@ -1415,9 +1376,8 @@ function setupSearch() {
     });
   }
 
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".search-bar"))
-      searchResults.classList.remove("active");
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".search-bar")) searchResults.classList.remove("active");
   });
 
   searchBox.addEventListener("focus", () => {
@@ -1434,56 +1394,37 @@ function performSearch(query) {
 
   const matches = [];
 
-  tripData.forEach((day) => {
+  tripData.forEach(day => {
     day.activities.forEach((activity, idx) => {
-      const text = `${activity.desc} ${activity.address || ""} ${
-        activity.tip || ""
-      } ${activity.fact || ""}`.toLowerCase();
+      const text = `${activity.desc} ${activity.address || ""} ${activity.tip || ""} ${activity.fact || ""}`.toLowerCase();
       if (text.includes(query)) {
-        matches.push({
-          day: day.day,
-          dayTitle: day.title,
-          activity,
-          activityIndex: idx,
-        });
+        matches.push({ day: day.day, dayTitle: day.title, activity, activityIndex: idx });
       }
     });
   });
 
   if (!matches.length) {
     searchInfo.textContent = "No results";
-    searchResults.innerHTML = `<div class="search-no-results"><i class="fa-solid fa-magnifying-glass" style="font-size:2rem;opacity:0.3;margin-bottom:0.5rem;"></i><br>No activities found for "${escapeHTML(
-      query
-    )}"</div>`;
+    searchResults.innerHTML = `<div class="search-no-results"><i class="fa-solid fa-magnifying-glass" style="font-size:2rem;opacity:0.3;margin-bottom:0.5rem;"></i><br>No activities found for "${escapeHTML(query)}"</div>`;
     searchResults.classList.add("active");
     return;
   }
 
-  searchInfo.textContent = `${matches.length} result${
-    matches.length !== 1 ? "s" : ""
-  }`;
+  searchInfo.textContent = `${matches.length} result${matches.length !== 1 ? "s" : ""}`;
 
   let html = "";
-  matches.forEach((match) => {
+  matches.forEach(match => {
     const highlighted = escapeHTML(match.activity.desc).replace(
       new RegExp(`(${escapedQuery})`, "gi"),
-      '<mark class="highlight">$1</mark>'
+      "<mark class=\"highlight\">\$1</mark>"
     );
 
     html += `
       <div class="search-result-item" data-day="${match.day}">
-        <div class="search-result-day">Day ${match.day} • ${
-      match.dayTitle
-    }</div>
+        <div class="search-result-day">Day ${match.day} • ${match.dayTitle}</div>
         <div class="search-result-time">${match.activity.time}</div>
         <div class="search-result-desc">${highlighted}</div>
-        ${
-          match.activity.address
-            ? `<div class="search-result-meta"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(
-                match.activity.address
-              )}</div>`
-            : ""
-        }
+        ${match.activity.address ? `<div class="search-result-meta"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(match.activity.address)}</div>` : ""}
       </div>
     `;
   });
@@ -1491,7 +1432,7 @@ function performSearch(query) {
   searchResults.innerHTML = html;
   searchResults.classList.add("active");
 
-  searchResults.querySelectorAll(".search-result-item").forEach((item) => {
+  searchResults.querySelectorAll(".search-result-item").forEach(item => {
     item.addEventListener("click", function () {
       const dayNum = parseInt(this.getAttribute("data-day"));
       currentDay = dayNum;
@@ -1503,7 +1444,7 @@ function performSearch(query) {
 }
 
 function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\__CODE_20__");
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\\__CODE_20__");
 }
 
 function updateProgress() {
@@ -1530,15 +1471,13 @@ async function fetchWeather(dayNum) {
   weatherDiv.style.flexDirection = "column";
   weatherDiv.style.alignItems = "flex-start";
   weatherDiv.style.gap = "0.25rem";
-  weatherDiv.innerHTML =
-    '<div style="display:flex;gap:0.5rem;align-items:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching weather...</div>';
+  weatherDiv.innerHTML = '<div style="display:flex;gap:0.5rem;align-items:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching weather...</div>';
 
   const isDownSouth = dayNum <= 5;
   const locationName = isDownSouth ? "Margaret River" : "Perth";
 
   try {
-    const url =
-      "https://api.open-meteo.com/v1/forecast?latitude=" +
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" +
       (isDownSouth ? -33.95 : -31.95) +
       "&longitude=" +
       (isDownSouth ? 115.08 : 115.86) +
@@ -1553,8 +1492,7 @@ async function fetchWeather(dayNum) {
     const feelsLike = Math.round(data.current.apparent_temperature);
     const wind = Math.round(data.current.wind_speed_10m);
     const timeIndex = data.hourly.time.indexOf(data.current.time);
-    const rainChance =
-      timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
+    const rainChance = timeIndex !== -1 ? data.hourly.precipitation_probability[timeIndex] : 0;
 
     let icon = "fa-cloud";
     if (code === 0) icon = "fa-sun";
@@ -1563,7 +1501,8 @@ async function fetchWeather(dayNum) {
     else if (code >= 51 && code <= 67) icon = "fa-cloud-rain";
     else if (code >= 71) icon = "fa-snowflake";
 
-    weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+    weatherDiv.innerHTML =
+      `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
         <i class="fa-solid ${icon}"></i> ${temp}°C in ${locationName}
       </div>
       <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
@@ -1572,15 +1511,12 @@ async function fetchWeather(dayNum) {
     showWeatherNudge(rainChance, temp, dayNum);
   } catch {
     const mockTemp = isDownSouth ? 14 : 18;
-    weatherDiv.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
-        <i class="fa-solid ${
-          isDownSouth ? "fa-cloud-sun" : "fa-sun"
-        }"></i> ~${mockTemp}°C in ${locationName}
+    weatherDiv.innerHTML =
+      `<div style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+        <i class="fa-solid ${isDownSouth ? "fa-cloud-sun" : "fa-sun"}"></i> ~${mockTemp}°C in ${locationName}
       </div>
       <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.75rem;font-weight:600;opacity:0.75;letter-spacing:0.02em;">
-        <span>Feels ~${
-          mockTemp - 2
-        }°C</span>•<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•<span><i class="fa-solid fa-umbrella"></i> 0%</span>
+        <span>Feels ~${mockTemp - 2}°C</span>•<span><i class="fa-solid fa-wind"></i> ~15 km/h</span>•<span><i class="fa-solid fa-umbrella"></i> 0%</span>
       </div>`;
     hideWeatherNudge();
   }
@@ -1592,8 +1528,8 @@ function showWeatherNudge(rainChance, temp, dayNum) {
 
   if (rainChance >= 50) {
     nudge.style.display = "flex";
-    const dayData = tripData.find((d) => d.day === dayNum);
-    const hasAlt = dayData && dayData.activities.some((a) => a.wetWeatherAlt);
+    const dayData = tripData.find(d => d.day === dayNum);
+    const hasAlt = dayData && dayData.activities.some(a => a.wetWeatherAlt);
     const altNote = hasAlt
       ? " This day has a wet-weather alternative — look for the rain-cloud note on the affected activities below."
       : "";
@@ -1641,7 +1577,7 @@ function setupCurrencyWidget() {
       updatePopupOpenState();
     });
   }
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", e => {
     if (!widget.contains(e.target) && !toggle.contains(e.target)) {
       widget.classList.remove("active");
       toggle.classList.remove("active");
@@ -1650,8 +1586,7 @@ function setupCurrencyWidget() {
   });
 
   sgdInput.addEventListener("input", function () {
-    if (!isReversed)
-      audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
+    if (!isReversed) audInput.value = ((parseFloat(this.value) || 0) * currentRate).toFixed(2);
   });
 
   if (swapBtn) {
@@ -1677,12 +1612,10 @@ function setupCurrencyWidget() {
   }
 
   function reverseConvert() {
-    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(
-      2
-    );
+    sgdInput.value = ((parseFloat(audInput.value) || 0) / currentRate).toFixed(2);
   }
 
-  quickBtns.forEach((btn) => {
+  quickBtns.forEach(btn => {
     btn.addEventListener("click", function () {
       const amount = this.getAttribute("data-amount");
       if (isReversed) {
@@ -1702,19 +1635,14 @@ function setupCurrencyWidget() {
     if (updatedDisplay) updatedDisplay.textContent = "Fetching rates...";
 
     fetch("https://open.er-api.com/v6/latest/SGD")
-      .then((r) => r.json())
-      .then((data) => {
+      .then(r => r.json())
+      .then(data => {
         currentRate = data.rates.AUD;
-        if (rateDisplay)
-          rateDisplay.textContent =
-            "1 SGD = " + currentRate.toFixed(4) + " AUD";
+        if (rateDisplay) rateDisplay.textContent = "1 SGD = " + currentRate.toFixed(4) + " AUD";
         if (updatedDisplay) {
-          updatedDisplay.textContent =
-            "Updated at " +
-            new Date().toLocaleTimeString("en-SG", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+          updatedDisplay.textContent = "Updated at " + new Date().toLocaleTimeString("en-SG", {
+            hour: "2-digit", minute: "2-digit"
+          });
         }
         sgdInput.dispatchEvent(new Event("input"));
       })
@@ -1726,8 +1654,7 @@ function setupCurrencyWidget() {
 
   fetchRate();
   setInterval(fetchRate, 300000);
-}
-function setupMoreMenu() {
+}function setupMoreMenu() {
   const moreBtn = document.getElementById("moreBtn");
   const moreMenu = document.getElementById("moreMenu");
   const jumpToday = document.getElementById("jumpToday");
@@ -1736,8 +1663,7 @@ function setupMoreMenu() {
   const goHomeMR = document.getElementById("goHomeMR");
   const goHomePerth = document.getElementById("goHomePerth");
 
-  const MARGARET_RIVER_ADDRESS =
-    "Apartment #4, 16 Town View Terrace, Margaret River WA 6285";
+  const MARGARET_RIVER_ADDRESS = "Apartment #4, 16 Town View Terrace, Margaret River WA 6285";
   const PERTH_ADDRESS = "15B Esperance St, East Victoria Park WA 6101";
 
   if (!moreBtn || !moreMenu) return;
@@ -1789,22 +1715,16 @@ function setupMoreMenu() {
 
   if (shareBtn) {
     shareBtn.addEventListener("click", function () {
-      const dayUrl =
-        window.location.origin +
-        window.location.pathname +
-        "?day=" +
-        currentDay;
-      const dayData = tripData.find((d) => d.day === currentDay);
+      const dayUrl = window.location.origin + window.location.pathname + "?day=" + currentDay;
+      const dayData = tripData.find(d => d.day === currentDay);
       const dayTitle = dayData ? dayData.title : "Day " + currentDay;
 
       if (navigator.share) {
-        navigator
-          .share({
-            title: "Perth Trip 2026 - " + dayTitle,
-            text: "Check out " + dayTitle + " of our Perth itinerary!",
-            url: dayUrl,
-          })
-          .catch(() => {});
+        navigator.share({
+          title: "Perth Trip 2026 - " + dayTitle,
+          text: "Check out " + dayTitle + " of our Perth itinerary!",
+          url: dayUrl
+        }).catch(() => {});
       } else {
         navigator.clipboard.writeText(dayUrl).then(() => {
           alert("Day link copied! Share: " + dayUrl);
@@ -1815,11 +1735,7 @@ function setupMoreMenu() {
   }
 
   document.addEventListener("click", function (e) {
-    if (
-      moreMenu &&
-      !moreMenu.contains(e.target) &&
-      !moreBtn.contains(e.target)
-    ) {
+    if (moreMenu && !moreMenu.contains(e.target) && !moreBtn.contains(e.target)) {
       closeMoreMenu();
     }
   });
@@ -1874,7 +1790,7 @@ function updatePopupOpenState() {
 }
 
 function printDaySheet(dayNum) {
-  const dayData = tripData.find((d) => d.day === dayNum);
+  const dayData = tripData.find(d => d.day === dayNum);
   if (!dayData) return;
 
   const printWindow = window.open("", "_blank");
@@ -1884,50 +1800,22 @@ function printDaySheet(dayNum) {
   }
 
   const rows = dayData.activities
-    .map((activity) => {
+    .map(activity => {
       const tagLabel =
-        activity.tag === "laundry"
-          ? "Laundry"
-          : activity.tag === "exercise"
-          ? "Exercise"
-          : activity.tag === "booking"
-          ? "Booking"
-          : "Activity";
-      const closingNote = activity.closesAt
-        ? ` (closes ${activity.closesAt})`
-        : "";
+        activity.tag === "laundry" ? "Laundry" :
+        activity.tag === "exercise" ? "Exercise" :
+        activity.tag === "booking" ? "Booking" : "Activity";
+      const closingNote = activity.closesAt ? ` (closes ${activity.closesAt})` : "";
       return `
         <tr>
           <td class="time-cell">${activity.time}</td>
           <td>
             <strong>${escapeHTML(activity.desc)}</strong>
             <span class="tag-cell">${tagLabel}</span><br/>
-            ${
-              activity.address
-                ? `<span class="addr-cell">${escapeHTML(
-                    activity.address
-                  )}${closingNote}</span><br/>`
-                : ""
-            }
-            ${
-              activity.duration
-                ? `<span class="dur-cell">Duration: ${activity.duration}</span><br/>`
-                : ""
-            }
-            ${
-              activity.tip
-                ? `<span class="tip-cell">Tip: ${escapeHTML(
-                    activity.tip
-                  )}</span><br/>`
-                : ""
-            }
-            ${
-              activity.wetWeatherAlt
-                ? `<span class="wet-cell">If it rains: ${escapeHTML(
-                    activity.wetWeatherAlt
-                  )}</span>`
-                : ""
-            }
+            ${activity.address ? `<span class="addr-cell">${escapeHTML(activity.address)}${closingNote}</span><br/>` : ""}
+            ${activity.duration ? `<span class="dur-cell">Duration: ${activity.duration}</span><br/>` : ""}
+            ${activity.tip ? `<span class="tip-cell">Tip: ${escapeHTML(activity.tip)}</span><br/>` : ""}
+            ${activity.wetWeatherAlt ? `<span class="wet-cell">If it rains: ${escapeHTML(activity.wetWeatherAlt)}</span>` : ""}
           </td>
         </tr>`;
     })
@@ -2035,6 +1923,10 @@ function initMap() {
     if (!map) {
       createMap();
     } else {
+      // Sync the map to whatever day the person is currently viewing
+      const dayFilter = "day-" + currentDay;
+      if (filterSelect) filterSelect.value = dayFilter;
+      renderFilteredMap(dayFilter);
       setTimeout(function () {
         map.invalidateSize();
       }, 200);
@@ -2046,26 +1938,41 @@ function initMap() {
       renderFilteredMap(this.value);
     });
   }
+
+  const prevDayBtn = document.getElementById("mapPrevDay");
+  const nextDayBtn = document.getElementById("mapNextDay");
+
+  function stepMapDay(delta) {
+    if (!filterSelect) return;
+    const match = filterSelect.value.match(/^day-(\d+)$/);
+    const baseDay = match ? parseInt(match[1], 10) : currentDay;
+    const newDay = Math.min(tripData.length, Math.max(1, baseDay + delta));
+    const newFilter = "day-" + newDay;
+    filterSelect.value = newFilter;
+    renderFilteredMap(newFilter);
+  }
+
+  if (prevDayBtn) prevDayBtn.addEventListener("click", () => stepMapDay(-1));
+  if (nextDayBtn) nextDayBtn.addEventListener("click", () => stepMapDay(1));
 }
 
 function createMap() {
-  map = L.map("tripMap", { attributionControl: false }).setView(
-    [-32.5, 115.8],
-    8
-  );
+  map = L.map("tripMap", { attributionControl: false }).setView([-32.5, 115.8], 8);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18,
+    maxZoom: 18
   }).addTo(map);
 
   // Plain, non-clickable attribution text - avoids Leaflet's default
   // attribution link out to openstreetmap.org
-  L.control
-    .attribution({ prefix: false })
+  L.control.attribution({ prefix: false })
     .addAttribution("Map data \u00A9 OpenStreetMap contributors")
     .addTo(map);
 
-  renderFilteredMap("all");
+  const filterSelect = document.getElementById("mapFilterSelect");
+  const defaultFilter = "day-" + currentDay;
+  if (filterSelect) filterSelect.value = defaultFilter;
+  renderFilteredMap(defaultFilter);
 }
 
 function clearMapLayers() {
@@ -2104,7 +2011,7 @@ function getFilteredActivities(filter) {
         filtered.push({
           day: day.day,
           title: day.title,
-          activity: activity,
+          activity: activity
         });
       }
     });
@@ -2113,6 +2020,13 @@ function getFilteredActivities(filter) {
   return filtered;
 }
 
+const MAP_TAG_COLORS = {
+  booking: "#1e3a5f",
+  exercise: "#c5a880",
+  laundry: "#8ba3ba",
+  activity: "#94a3b8"
+};
+
 function renderFilteredMap(filter) {
   if (!map) return;
 
@@ -2120,52 +2034,68 @@ function renderFilteredMap(filter) {
 
   const filteredActivities = getFilteredActivities(filter);
   const routeCoords = [];
+  const stopsByCoordKey = new Map(); // dedupe identical addresses into one marker
 
-  filteredActivities.forEach(function (item, index) {
+  filteredActivities.forEach(function (item) {
     const coords = getCoordinatesForAddress(item.activity.address);
     if (!coords) return;
 
-    routeCoords.push(coords);
+    const coordKey = coords[0].toFixed(4) + "," + coords[1].toFixed(4);
 
-    const iconColor = item.day <= 5 ? "#1e3a5f" : "#c5a880";
-    const markerNumber = index + 1;
+    if (stopsByCoordKey.has(coordKey)) {
+      // Same location as an earlier stop (e.g. multiple "back at the apartment"
+      // entries) - fold it into the existing marker instead of stacking duplicates
+      stopsByCoordKey.get(coordKey).items.push(item);
+    } else {
+      stopsByCoordKey.set(coordKey, { coords, items: [item] });
+      routeCoords.push(coords);
+    }
+  });
+
+  let stopNumber = 0;
+  stopsByCoordKey.forEach(function (stop) {
+    stopNumber++;
+    const primaryItem = stop.items[0];
+    const dominantTag = primaryItem.activity.tag || "activity";
+    const iconColor = MAP_TAG_COLORS[dominantTag] || MAP_TAG_COLORS.activity;
 
     const markerHtml =
       '<div style="background:' +
       iconColor +
       '; width:30px; height:30px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:12px;">' +
-      markerNumber +
+      stopNumber +
       "</div>";
 
     const customIcon = L.divIcon({
       className: "custom-map-marker",
       html: markerHtml,
       iconSize: [30, 30],
-      iconAnchor: [15, 15],
+      iconAnchor: [15, 15]
     });
+
+    const itemsHtml = stop.items
+      .map(function (item) {
+        return (
+          "<div style='margin-bottom:0.5rem;'>" +
+          "<strong>Day " + item.day + " · " + item.activity.time + "</strong><br>" +
+          escapeHTML(item.activity.desc) +
+          "</div>"
+        );
+      })
+      .join("");
 
     const popupHtml =
       '<div style="min-width:220px;">' +
-      "<strong>#" +
-      markerNumber +
-      " · Day " +
-      item.day +
-      "</strong><br>" +
-      "<strong>" +
-      item.activity.time +
-      "</strong><br>" +
-      item.activity.desc +
-      "<br>" +
-      '<small style="color:#666;">' +
-      item.activity.address +
-      "</small><br>" +
+      "<strong>Stop #" + stopNumber + "</strong><br>" +
+      itemsHtml +
+      '<small style="color:#666;">' + escapeHTML(primaryItem.activity.address) + "</small><br>" +
       '<a href="https://www.google.com/maps/search/?api=1&query=' +
-      encodeURIComponent(item.activity.address) +
+      encodeURIComponent(primaryItem.activity.address) +
       '" target="_blank" style="color:#1e3a5f; margin-top:0.5rem; display:inline-block;">' +
       '<i class="fa-solid fa-location-dot"></i> Navigate</a>' +
       "</div>";
 
-    const marker = L.marker(coords, { icon: customIcon })
+    const marker = L.marker(stop.coords, { icon: customIcon })
       .bindPopup(popupHtml)
       .addTo(map);
 
@@ -2176,8 +2106,8 @@ function renderFilteredMap(filter) {
     polyline = L.polyline(routeCoords, {
       color: "#1e3a5f",
       weight: 3,
-      opacity: 0.65,
-      dashArray: "10, 5",
+      opacity: 0.55,
+      dashArray: "10, 5"
     }).addTo(map);
   }
 
@@ -2195,9 +2125,7 @@ function getCoordinatesForAddress(address) {
   const coordinates = {
     "Cockburn Gateway, 816 Beeliar Dr, Success WA 6164": [-32.1255, 115.8481],
     "Cockburn Gateway, Success WA 6164": [-32.1255, 115.8481],
-    "Apartment #4, 16 Town View Terrace, Margaret River WA 6285": [
-      -33.9539, 115.0764,
-    ],
+    "Apartment #4, 16 Town View Terrace, Margaret River WA 6285": [-33.9539, 115.0764],
     "Lot 272 Bussell Hwy, Margaret River WA 6285": [-33.9539, 115.0764],
     "Leeuwin Rd, Augusta WA 6290": [-34.3744, 115.135],
     "Jewel Caves Rd, Deepdene WA 6290": [-34.05, 115.0],
@@ -2261,7 +2189,7 @@ function getCoordinatesForAddress(address) {
     "1128 Albany Hwy, Bentley WA 6102": [-32.005, 115.92],
     "848 Albany Hwy, East Victoria Park WA 6101": [-31.99, 115.9],
     "55 George St, Kensington WA 6151": [-31.98, 115.88],
-    "Perth Airport Terminal 1, Horrie Miller Dr": [-31.94, 115.97],
+    "Perth Airport Terminal 1, Horrie Miller Dr": [-31.94, 115.97]
   };
 
   return coordinates[address] || null;
@@ -2270,8 +2198,7 @@ function getCoordinatesForAddress(address) {
 let lastScrollTop = 0;
 let ticking = false;
 function updateScrollState() {
-  const currentScroll =
-    window.pageYOffset || document.documentElement.scrollTop;
+  const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
   if (currentScroll <= 80) {
     document.body.classList.add("at-top");
@@ -2288,16 +2215,12 @@ function updateScrollState() {
   ticking = false;
 }
 
-window.addEventListener(
-  "scroll",
-  function () {
-    if (!ticking) {
-      window.requestAnimationFrame(updateScrollState);
-      ticking = true;
-    }
-  },
-  { passive: true }
-);
+window.addEventListener("scroll", function () {
+  if (!ticking) {
+    window.requestAnimationFrame(updateScrollState);
+    ticking = true;
+  }
+}, { passive: true });
 
 document.body.classList.add("at-top");
 
@@ -2333,9 +2256,7 @@ window.addEventListener("beforeinstallprompt", function (e) {
     installBtn.addEventListener("click", function () {
       installPrompt.classList.remove("show");
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-      });
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
     });
   }
 
@@ -2450,8 +2371,7 @@ function updateNextActivityTimer() {
   }
 
   if (!nextActivity) {
-    timerDiv.innerHTML =
-      '<i class="fa-solid fa-check-circle"></i> All activities complete!';
+    timerDiv.innerHTML = '<i class="fa-solid fa-check-circle"></i> All activities complete!';
     timerDiv.classList.add("visible");
     return;
   }
@@ -2462,15 +2382,13 @@ function updateNextActivityTimer() {
   const hoursUntil = Math.floor(minsUntil / 60);
   const remMins = minsUntil % 60;
 
-  const timeText =
-    hoursUntil > 0 ? `${hoursUntil}h ${remMins}m` : `${remMins} mins`;
+  const timeText = hoursUntil > 0 ? `${hoursUntil}h ${remMins}m` : `${remMins} mins`;
 
   timerDiv.innerHTML =
     '<i class="fa-solid fa-clock"></i> Next: ' +
     nextActivity.desc.substring(0, 25) +
     (nextActivity.desc.length > 25 ? "..." : "") +
-    " in " +
-    timeText;
+    " in " + timeText;
 
   timerDiv.classList.add("visible");
 }
@@ -2480,31 +2398,11 @@ setInterval(updateNextActivityTimer, 60000);
 function optimizeTouchButtons() {
   if (!document.documentElement.classList.contains("touch-device")) return;
 
-  const touchTargets = document.querySelectorAll(
-    "button, .tab, .map-link, .activity, .search-result-item"
-  );
-  touchTargets.forEach((el) => {
-    el.addEventListener(
-      "touchstart",
-      function () {
-        this.style.opacity = "0.7";
-      },
-      { passive: true }
-    );
-    el.addEventListener(
-      "touchend",
-      function () {
-        this.style.opacity = "1";
-      },
-      { passive: true }
-    );
-    el.addEventListener(
-      "touchcancel",
-      function () {
-        this.style.opacity = "1";
-      },
-      { passive: true }
-    );
+  const touchTargets = document.querySelectorAll("button, .tab, .map-link, .activity, .search-result-item");
+  touchTargets.forEach(el => {
+    el.addEventListener("touchstart", function () { this.style.opacity = "0.7"; }, { passive: true });
+    el.addEventListener("touchend", function () { this.style.opacity = "1"; }, { passive: true });
+    el.addEventListener("touchcancel", function () { this.style.opacity = "1"; }, { passive: true });
   });
 }
 
