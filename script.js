@@ -366,33 +366,41 @@ const tripDataPart2 = [
       },
       {
         time: "15:00",
-        desc: "Busselton Books + The Good Egg Cafe",
-        address: "38/44 Albert St, Busselton WA 6280",
+        desc: "Op shop crawl: St Mary's, Vinnies, Bay Life, Mates, Salvation Army, Adra",
+        address: "47 Peel Terrace, Busselton WA 6280",
         tag: "activity",
         duration: "1 hour",
-        tip: "A perfect pairing—browse excellent second-hand books and read them over a warm brew.",
+        tip: "All six are clustered within a few minutes of each other in central Busselton (Peel Terrace, Kent St, Barlee St, Cammilleri St & Duchess St) — easy to hit all six on foot or a very short drive between each.",
       },
       {
         time: "16:00",
+        desc: "Busselton Books + The Good Egg Cafe",
+        address: "38/44 Albert St, Busselton WA 6280",
+        tag: "activity",
+        duration: "45 mins",
+        tip: "A perfect pairing—browse excellent second-hand books and read them over a warm brew.",
+      },
+      {
+        time: "16:45",
         desc: "Groceries at Woolworths",
         address: "59-65 Kent St, Busselton WA 6280",
         tag: "activity",
-        duration: "1 hour",
+        duration: "45 mins",
         tip: "Stock up on car snacks and water for tomorrow's longer drive back to Perth.",
       },
       {
-        time: "17:00",
+        time: "17:30",
         desc: "Petrol at BP",
         address: "24 Albert St, Busselton WA 6280",
         tag: "activity",
-        duration: "30 mins",
+        duration: "20 mins",
         tip: "Fill up today so you don't have to worry about it during checkout tomorrow morning.",
       },
       {
-        time: "18:10",
+        time: "18:30",
         desc: "Pack all bags for Perth",
         tag: "activity",
-        duration: "1h 5m",
+        duration: "45 mins",
         tip: "Keep a separate small tote bag for items you'll need easily accessible in the car.",
       },
       {
@@ -2150,6 +2158,7 @@ function getCoordinatesForAddress(address) {
     "69 Bussell Hwy, Cowaramup WA 6284": [-33.8444, 115.0786],
     "455 N Jindong Rd, North Jindong WA 6280": [-33.78, 115.12],
     "86 West St, Busselton WA 6280": [-33.6544, 115.3464],
+    "47 Peel Terrace, Busselton WA 6280": [-33.6544, 115.3464],
     "17 Foreshore Parade, Busselton WA 6280": [-33.6544, 115.3464],
     "38/44 Albert St, Busselton WA 6280": [-33.6544, 115.3464],
     "59-65 Kent St, Busselton WA 6280": [-33.6544, 115.3464],
@@ -2409,4 +2418,3 @@ function optimizeTouchButtons() {
 
 // ===== FINAL INITIALIZATION =====
 window.addEventListener("load", init);
-
